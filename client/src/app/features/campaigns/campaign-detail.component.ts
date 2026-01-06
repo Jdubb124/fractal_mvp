@@ -24,10 +24,7 @@ import { CampaignService, Campaign, Asset } from '../../core/services/campaign.s
               <div>
                 <div class="flex items-center gap-3 mb-2">
                   <h1 class="text-2xl font-bold text-text-primary">{{ campaign()?.name }}</h1>
-                  <span 
-                    class="px-3 py-1 rounded-full text-xs font-medium"
-                    [class]="getStatusClass(campaign()?.status || '')"
-                  >
+                  <span class="px-3 py-1 rounded-full text-xs font-medium" [class]="getStatusClass(campaign()?.status || '')">
                     {{ campaign()?.status }}
                   </span>
                 </div>
@@ -37,11 +34,7 @@ import { CampaignService, Campaign, Asset } from '../../core/services/campaign.s
               </div>
               <div class="flex gap-3">
                 @if (campaign()?.status === 'draft') {
-                  <button 
-                    (click)="generateAssets()"
-                    [disabled]="campaignService.isGenerating()"
-                    class="btn btn-primary"
-                  >
+                  <button (click)="generateAssets()" [disabled]="campaignService.isGenerating()" class="btn btn-primary">
                     @if (campaignService.isGenerating()) {
                       <span class="flex items-center gap-2">
                         <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -52,9 +45,7 @@ import { CampaignService, Campaign, Asset } from '../../core/services/campaign.s
                     }
                   </button>
                 }
-                <button (click)="exportCampaign()" class="btn btn-secondary">
-                  📥 Export
-                </button>
+                <button (click)="exportCampaign()" class="btn btn-secondary">📥 Export</button>
               </div>
             </div>
           </div>
@@ -100,17 +91,14 @@ import { CampaignService, Campaign, Asset } from '../../core/services/campaign.s
                     <!-- Asset Header -->
                     <div class="flex items-center justify-between mb-4">
                       <div class="flex items-center gap-3">
-                        <div 
-                          class="w-10 h-10 rounded-lg flex items-center justify-center"
-                          [class]="asset.channelType === 'email' ? 'bg-channel/15' : 'bg-asset/15'"
-                        >
+                        <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+                             [class]="asset.channelType === 'email' ? 'bg-channel/15' : 'bg-asset/15'">
                           <span>{{ asset.channelType === 'email' ? '📧' : '📱' }}</span>
                         </div>
                         <div>
                           <h3 class="font-medium text-text-primary">{{ asset.name }}</h3>
                           <div class="text-sm text-text-muted">
-                            {{ asset.channelType === 'email' ? 'Email' : 'Meta Ad' }} · 
-                            {{ asset.versions.length }} versions
+                            {{ asset.channelType === 'email' ? 'Email' : 'Meta Ad' }} · {{ asset.versions.length }} versions
                           </div>
                         </div>
                       </div>
@@ -123,18 +111,13 @@ import { CampaignService, Campaign, Asset } from '../../core/services/campaign.s
                           <div class="flex items-center justify-between mb-3">
                             <div class="flex items-center gap-2">
                               <span class="level-badge level-version">{{ version.versionName }}</span>
-                              <span 
-                                class="px-2 py-0.5 rounded text-xs"
-                                [class]="getVersionStatusClass(version.status)"
-                              >
+                              <span class="px-2 py-0.5 rounded text-xs" [class]="getVersionStatusClass(version.status)">
                                 {{ version.status }}
                               </span>
                             </div>
-                            <button 
-                              (click)="approveVersion(asset, version)"
-                              [disabled]="version.status === 'approved'"
-                              class="text-xs text-accent-primary hover:underline disabled:opacity-50"
-                            >
+                            <button (click)="approveVersion(asset, version)"
+                                    [disabled]="version.status === 'approved'"
+                                    class="text-xs text-accent-primary hover:underline disabled:opacity-50">
                               {{ version.status === 'approved' ? '✓ Approved' : 'Approve' }}
                             </button>
                           </div>
@@ -267,8 +250,8 @@ export class CampaignDetailComponent implements OnInit {
   }
 
   approveVersion(asset: Asset, version: any): void {
-    // TODO: Implement version approval via asset service
     console.log('Approve version:', asset._id, version._id);
+    // TODO: Call asset service to approve
   }
 
   exportCampaign(): void {

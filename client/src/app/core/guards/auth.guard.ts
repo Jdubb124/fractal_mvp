@@ -10,16 +10,11 @@ export const authGuard: CanActivateFn = (route, state) => {
     return true;
   }
 
-  // Store the attempted URL for redirecting after login
-  router.navigate(['/auth/login'], {
-    queryParams: { returnUrl: state.url },
-  });
-
+  router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
   return false;
 };
 
-// Guard for auth pages (login/register) - redirect if already authenticated
-export const noAuthGuard: CanActivateFn = (route, state) => {
+export const guestGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 

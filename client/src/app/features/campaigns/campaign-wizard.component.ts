@@ -3,42 +3,31 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormArray } from '@angular/forms';
 import { LayoutComponent } from '../../shared/components/layout/layout.component';
-import { LoadingComponent } from '../../shared/components/loading/loading.component';
 import { CampaignService } from '../../core/services/campaign.service';
-import { AudienceService, Audience } from '../../core/services/audience.service';
+import { AudienceService } from '../../core/services/audience.service';
 import { BrandService } from '../../core/services/brand.service';
 
 @Component({
   selector: 'app-campaign-wizard',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, LayoutComponent, LoadingComponent],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, LayoutComponent],
   template: `
     <app-layout>
       <div class="p-8 max-w-3xl mx-auto">
-        <!-- Header -->
         <div class="mb-8">
-          <a routerLink="/campaigns" class="text-sm text-text-muted hover:text-accent-primary mb-4 inline-block">
-            ← Back to Campaigns
-          </a>
+          <a routerLink="/campaigns" class="text-sm text-text-muted hover:text-accent-primary mb-4 inline-block">← Back to Campaigns</a>
           <h1 class="text-2xl font-bold text-text-primary">Create Campaign</h1>
-          <p class="text-text-secondary mt-2">
-            Set up your campaign in a few simple steps.
-          </p>
+          <p class="text-text-secondary mt-2">Set up your campaign in a few simple steps.</p>
         </div>
 
-        <!-- Prerequisites Check -->
         @if (!brandService.hasBrandGuide()) {
           <div class="card text-center py-12">
             <div class="w-16 h-16 bg-warning/20 rounded-full flex items-center justify-center mx-auto mb-4">
               <span class="text-2xl">⚠️</span>
             </div>
             <h3 class="text-lg font-medium text-text-primary mb-2">Brand Guide Required</h3>
-            <p class="text-text-secondary mb-4">
-              Please create your brand guide before creating campaigns.
-            </p>
-            <a routerLink="/brand" class="btn btn-primary">
-              Create Brand Guide
-            </a>
+            <p class="text-text-secondary mb-4">Please create your brand guide before creating campaigns.</p>
+            <a routerLink="/brand" class="btn btn-primary">Create Brand Guide</a>
           </div>
         } @else if (audienceService.audiences().length === 0) {
           <div class="card text-center py-12">
@@ -46,26 +35,16 @@ import { BrandService } from '../../core/services/brand.service';
               <span class="text-2xl">⚠️</span>
             </div>
             <h3 class="text-lg font-medium text-text-primary mb-2">Audiences Required</h3>
-            <p class="text-text-secondary mb-4">
-              Please create at least one audience segment before creating campaigns.
-            </p>
-            <a routerLink="/audiences/new" class="btn btn-primary">
-              Create Audience
-            </a>
+            <p class="text-text-secondary mb-4">Please create at least one audience segment before creating campaigns.</p>
+            <a routerLink="/audiences/new" class="btn btn-primary">Create Audience</a>
           </div>
         } @else {
           <!-- Step Indicator -->
           <div class="flex items-center justify-between mb-8">
             @for (step of steps; track step.id; let i = $index) {
-              <div 
-                class="flex items-center gap-2 cursor-pointer"
-                (click)="goToStep(i)"
-                [class.opacity-50]="i > currentStep()"
-              >
-                <div 
-                  class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium"
-                  [class]="i <= currentStep() ? 'bg-accent-primary text-white' : 'bg-bg-card text-text-muted'"
-                >
+              <div class="flex items-center gap-2 cursor-pointer" (click)="goToStep(i)" [class.opacity-50]="i > currentStep()">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium"
+                     [class]="i <= currentStep() ? 'bg-accent-primary text-white' : 'bg-bg-card text-text-muted'">
                   {{ i + 1 }}
                 </div>
                 <span class="hidden md:inline text-sm" [class]="i <= currentStep() ? 'text-text-primary' : 'text-text-muted'">
@@ -86,22 +65,12 @@ import { BrandService } from '../../core/services/brand.service';
                 
                 <div class="mb-4">
                   <label class="form-label">Campaign Name *</label>
-                  <input
-                    type="text"
-                    formControlName="name"
-                    class="form-input"
-                    placeholder="e.g., Summer Sale 2024, Year-End Promotion"
-                  />
+                  <input type="text" formControlName="name" class="form-input" placeholder="e.g., Summer Sale 2024, Year-End Promotion" />
                 </div>
 
                 <div class="mb-4">
                   <label class="form-label">Campaign Objective</label>
-                  <textarea
-                    formControlName="objective"
-                    class="form-input"
-                    rows="3"
-                    placeholder="What do you want to achieve with this campaign?"
-                  ></textarea>
+                  <textarea formControlName="objective" class="form-input" rows="3" placeholder="What do you want to achieve with this campaign?"></textarea>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
@@ -121,27 +90,16 @@ import { BrandService } from '../../core/services/brand.service';
             @if (currentStep() === 1) {
               <div class="card animate-fade-in">
                 <h2 class="text-lg font-semibold mb-2">Select Audiences</h2>
-                <p class="text-sm text-text-secondary mb-6">
-                  Choose which audience segments to target with this campaign.
-                </p>
+                <p class="text-sm text-text-secondary mb-6">Choose which audience segments to target with this campaign.</p>
 
                 <div class="space-y-3">
                   @for (audience of audienceService.audiences(); track audience._id) {
-                    <label 
-                      class="flex items-center gap-4 p-4 bg-bg-card rounded-lg cursor-pointer hover:bg-bg-hover transition-colors"
-                      [class.ring-2]="isAudienceSelected(audience._id)"
-                      [class.ring-accent-primary]="isAudienceSelected(audience._id)"
-                    >
-                      <input
-                        type="checkbox"
-                        [checked]="isAudienceSelected(audience._id)"
-                        (change)="toggleAudience(audience._id)"
-                        class="sr-only"
-                      />
-                      <div 
-                        class="w-5 h-5 rounded border-2 flex items-center justify-center"
-                        [class]="isAudienceSelected(audience._id) ? 'border-accent-primary bg-accent-primary' : 'border-border-color'"
-                      >
+                    <label class="flex items-center gap-4 p-4 bg-bg-card rounded-lg cursor-pointer hover:bg-bg-hover transition-colors"
+                           [class.ring-2]="isAudienceSelected(audience._id)"
+                           [class.ring-accent-primary]="isAudienceSelected(audience._id)">
+                      <input type="checkbox" [checked]="isAudienceSelected(audience._id)" (change)="toggleAudience(audience._id)" class="sr-only" />
+                      <div class="w-5 h-5 rounded border-2 flex items-center justify-center"
+                           [class]="isAudienceSelected(audience._id) ? 'border-accent-primary bg-accent-primary' : 'border-border-color'">
                         @if (isAudienceSelected(audience._id)) {
                           <span class="text-white text-xs">✓</span>
                         }
@@ -164,27 +122,17 @@ import { BrandService } from '../../core/services/brand.service';
             @if (currentStep() === 2) {
               <div class="card animate-fade-in">
                 <h2 class="text-lg font-semibold mb-2">Select Channels</h2>
-                <p class="text-sm text-text-secondary mb-6">
-                  Choose which channels to generate content for.
-                </p>
+                <p class="text-sm text-text-secondary mb-6">Choose which channels to generate content for.</p>
 
                 <div class="space-y-4" formArrayName="channels">
                   @for (channel of channelOptions; track channel.type; let i = $index) {
                     <div [formGroupName]="i">
-                      <label 
-                        class="flex items-center gap-4 p-4 bg-bg-card rounded-lg cursor-pointer hover:bg-bg-hover transition-colors"
-                        [class.ring-2]="form.get('channels')?.value[i]?.enabled"
-                        [class.ring-accent-primary]="form.get('channels')?.value[i]?.enabled"
-                      >
-                        <input
-                          type="checkbox"
-                          formControlName="enabled"
-                          class="sr-only"
-                        />
-                        <div 
-                          class="w-5 h-5 rounded border-2 flex items-center justify-center"
-                          [class]="form.get('channels')?.value[i]?.enabled ? 'border-accent-primary bg-accent-primary' : 'border-border-color'"
-                        >
+                      <label class="flex items-center gap-4 p-4 bg-bg-card rounded-lg cursor-pointer hover:bg-bg-hover transition-colors"
+                             [class.ring-2]="form.get('channels')?.value[i]?.enabled"
+                             [class.ring-accent-primary]="form.get('channels')?.value[i]?.enabled">
+                        <input type="checkbox" formControlName="enabled" class="sr-only" />
+                        <div class="w-5 h-5 rounded border-2 flex items-center justify-center"
+                             [class]="form.get('channels')?.value[i]?.enabled ? 'border-accent-primary bg-accent-primary' : 'border-border-color'">
                           @if (form.get('channels')?.value[i]?.enabled) {
                             <span class="text-white text-xs">✓</span>
                           }
@@ -209,29 +157,17 @@ import { BrandService } from '../../core/services/brand.service';
             @if (currentStep() === 3) {
               <div class="card animate-fade-in">
                 <h2 class="text-lg font-semibold mb-2">Campaign Messages</h2>
-                <p class="text-sm text-text-secondary mb-6">
-                  Define the key messages and call-to-action for this campaign.
-                </p>
+                <p class="text-sm text-text-secondary mb-6">Define the key messages and call-to-action for this campaign.</p>
 
                 <div class="mb-4">
                   <label class="form-label">Key Messages (comma separated)</label>
-                  <input
-                    type="text"
-                    [value]="getKeyMessagesString()"
-                    (input)="updateKeyMessages($event)"
-                    class="form-input"
-                    placeholder="e.g., Save 25% this month, Limited time offer"
-                  />
+                  <input type="text" [value]="getKeyMessagesString()" (input)="updateKeyMessages($event)" class="form-input"
+                         placeholder="e.g., Save 25% this month, Limited time offer" />
                 </div>
 
                 <div class="mb-4">
                   <label class="form-label">Call to Action</label>
-                  <input
-                    type="text"
-                    formControlName="callToAction"
-                    class="form-input"
-                    placeholder="e.g., Shop Now, Learn More, Book Today"
-                  />
+                  <input type="text" formControlName="callToAction" class="form-input" placeholder="e.g., Shop Now, Learn More, Book Today" />
                 </div>
 
                 <div>
@@ -279,7 +215,7 @@ import { BrandService } from '../../core/services/brand.service';
                     </div>
                   </div>
 
-                  <div class="info-box">
+                  <div class="p-4 bg-accent-primary/10 border border-accent-primary/20 rounded-md flex items-center gap-3">
                     <span class="text-accent-primary">ℹ️</span>
                     <div class="text-sm">
                       This campaign will generate <strong>{{ getAssetCount() }} assets</strong> 
@@ -292,30 +228,16 @@ import { BrandService } from '../../core/services/brand.service';
 
             <!-- Navigation -->
             <div class="flex justify-between mt-6">
-              <button
-                type="button"
-                (click)="prevStep()"
-                class="btn btn-secondary"
-                [class.invisible]="currentStep() === 0"
-              >
+              <button type="button" (click)="prevStep()" class="btn btn-secondary" [class.invisible]="currentStep() === 0">
                 ← Previous
               </button>
 
               @if (currentStep() < steps.length - 1) {
-                <button
-                  type="button"
-                  (click)="nextStep()"
-                  class="btn btn-primary"
-                  [disabled]="!canProceed()"
-                >
+                <button type="button" (click)="nextStep()" class="btn btn-primary" [disabled]="!canProceed()">
                   Next →
                 </button>
               } @else {
-                <button
-                  type="submit"
-                  class="btn btn-primary"
-                  [disabled]="form.invalid || saving()"
-                >
+                <button type="submit" class="btn btn-primary" [disabled]="form.invalid || saving()">
                   @if (saving()) {
                     Creating...
                   } @else {

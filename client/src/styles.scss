@@ -1,0 +1,188 @@
+/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base styles */
+@layer base {
+  body {
+    @apply bg-bg-dark text-text-primary font-sans antialiased;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    @apply w-1.5;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border-color rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-text-muted;
+  }
+}
+
+/* Component styles */
+@layer components {
+  /* Buttons */
+  .btn {
+    @apply px-5 py-2.5 rounded-md text-sm font-medium cursor-pointer transition-all duration-200 border-none;
+  }
+
+  .btn-primary {
+    @apply bg-gradient-to-br from-accent-primary via-accent-secondary to-channel text-white;
+  }
+
+  .btn-primary:hover {
+    @apply opacity-90 -translate-y-0.5 shadow-glow;
+  }
+
+  .btn-secondary {
+    @apply bg-bg-card text-text-secondary border border-border-color;
+  }
+
+  .btn-secondary:hover {
+    @apply bg-bg-hover text-text-primary;
+  }
+
+  /* Cards */
+  .card {
+    @apply bg-bg-panel border border-border-color rounded-lg p-6;
+  }
+
+  .card-hover {
+    @apply transition-all duration-200;
+  }
+
+  .card-hover:hover {
+    @apply border-accent-primary shadow-glow -translate-y-0.5;
+  }
+
+  /* Form inputs */
+  .form-input {
+    @apply w-full px-3.5 py-3 bg-bg-card border border-border-color rounded-md text-text-primary text-sm transition-all duration-200;
+  }
+
+  .form-input:focus {
+    @apply outline-none border-accent-primary ring-4 ring-accent-primary/10;
+  }
+
+  .form-input::placeholder {
+    @apply text-text-muted;
+  }
+
+  .form-label {
+    @apply block text-sm font-medium text-text-secondary mb-2;
+  }
+
+  /* Tags */
+  .tag {
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 bg-bg-card border border-border-color rounded-full text-sm text-text-secondary;
+  }
+
+  /* Status indicators */
+  .status-dot {
+    @apply w-2 h-2 rounded-full;
+  }
+
+  .status-active {
+    @apply bg-success;
+  }
+
+  .status-draft {
+    @apply bg-warning;
+  }
+
+  .status-inactive {
+    @apply bg-text-muted;
+  }
+
+  /* Hierarchy level badges */
+  .level-badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide;
+  }
+
+  .level-campaign {
+    @apply bg-campaign/15 text-campaign;
+  }
+
+  .level-segment {
+    @apply bg-segment/15 text-segment;
+  }
+
+  .level-channel {
+    @apply bg-channel/15 text-channel;
+  }
+
+  .level-asset {
+    @apply bg-asset/15 text-asset;
+  }
+
+  .level-version {
+    @apply bg-version/15 text-version;
+  }
+
+  /* Info box */
+  .info-box {
+    @apply flex gap-3 p-4 bg-accent-primary/10 border border-accent-primary/20 rounded-md;
+  }
+
+  /* Tree item */
+  .tree-item {
+    @apply flex items-center gap-2.5 px-3 py-2.5 rounded-md cursor-pointer transition-all duration-150;
+  }
+
+  .tree-item:hover {
+    @apply bg-bg-hover;
+  }
+
+  .tree-item.selected {
+    @apply bg-bg-card;
+  }
+
+  /* Stats card */
+  .stat-card {
+    @apply bg-bg-card rounded-md p-4;
+  }
+
+  .stat-value {
+    @apply text-2xl font-bold font-mono;
+  }
+
+  .stat-label {
+    @apply text-xs text-text-muted mt-1;
+  }
+}
+
+/* Utility styles */
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-accent-primary via-accent-secondary to-channel bg-clip-text text-transparent;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-spin-slow {
+    animation: spin 2s linear infinite;
+  }
+}
