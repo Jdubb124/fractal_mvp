@@ -258,7 +258,7 @@ export class CampaignDetailComponent implements OnInit {
     const id = this.campaign()?._id;
     if (!id) return;
 
-    this.campaignService.exportCampaign(id).subscribe({
+    this.campaignService.getCampaign(id).subscribe({
       next: (response) => {
         const blob = new Blob([JSON.stringify(response.data, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);

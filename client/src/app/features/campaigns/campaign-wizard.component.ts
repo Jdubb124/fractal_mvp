@@ -373,9 +373,9 @@ export class CampaignWizardComponent implements OnInit {
 
     this.saving.set(true);
     this.campaignService.createCampaign(this.form.value).subscribe({
-      next: (response) => {
+      next: (campaign) => {
         this.saving.set(false);
-        this.router.navigate(['/campaigns', response.data.campaign._id]);
+        this.router.navigate(['/campaigns', campaign._id]);
       },
       error: () => {
         this.saving.set(false);
