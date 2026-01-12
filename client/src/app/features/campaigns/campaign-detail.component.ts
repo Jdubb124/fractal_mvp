@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { LayoutComponent } from '../../shared/components/layout/layout.component';
 import { LoadingComponent } from '../../shared/components/loading/loading.component';
-import { CampaignService, Campaign, Asset } from '../../core/services/campaign.service';
+import { CampaignService, Campaign, Asset, CampaignDetailResponse } from '../../core/services/campaign.service';
 
 @Component({
   selector: 'app-campaign-detail',
@@ -202,7 +202,7 @@ export class CampaignDetailComponent implements OnInit {
 
   loadCampaign(id: string): void {
     this.campaignService.getCampaign(id).subscribe({
-      next: (response) => {
+      next: (response: CampaignDetailResponse) => {
         this.campaign.set(response.data.campaign);
         this.assets.set(response.data.assets || []);
       },
@@ -242,9 +242,9 @@ export class CampaignDetailComponent implements OnInit {
     if (!id) return;
 
     this.campaignService.generateAssets(id).subscribe({
-      next: (response) => {
+      next: (response: CampaignDetailResponse) => {
         this.campaign.set(response.data.campaign);
-        this.assets.set(response.data.assets);
+        this.assets.set(response.data.assets || []);
       },
     });
   }
@@ -259,7 +259,7 @@ export class CampaignDetailComponent implements OnInit {
     if (!id) return;
 
     this.campaignService.getCampaign(id).subscribe({
-      next: (response) => {
+      next: (response: CampaignDetailResponse) => {
         const blob = new Blob([JSON.stringify(response.data, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');

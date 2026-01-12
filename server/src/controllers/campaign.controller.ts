@@ -264,13 +264,13 @@ export const duplicateCampaign = asyncHandler(async (req: Request, res: Response
     );
   }
 
-  // Create duplicate
-  const duplicateData = originalCampaign.toObject();
-  delete duplicateData._id;
-  delete duplicateData.createdAt;
-  delete duplicateData.updatedAt;
-  duplicateData.name = `${originalCampaign.name} (Copy)`;
-  duplicateData.status = CAMPAIGN_STATUS.DRAFT;
+  // Create duplicate - extract only the fields we need
+  const { _id, createdAt, updatedAt, ...campaignFields } = originalCampaign.toObject();
+  const duplicateData = {
+    ...campaignFields,
+    name: `${originalCampaign.name} (Copy)`,
+    status: CAMPAIGN_STATUS.DRAFT,
+  };
 
   const newCampaign = await Campaign.create(duplicateData);
 

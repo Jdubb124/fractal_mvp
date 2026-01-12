@@ -1,30 +1,46 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
+// Virtual property interface
+export interface IBrandGuideContext {
+  company: string;
+  industry?: string;
+  voice: string;
+  tone?: string;
+  valueProposition?: string;
+  keyMessages: string[];
+  avoid: string[];
+  audience?: string;
+  competitors?: string;
+}
+
 export interface IBrandGuide extends Document {
   _id: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
   companyName: string;
   industry?: string;
-  
+
   // Voice & Tone
   voiceAttributes: string[];
   toneGuidelines?: string;
-  
+
   // Messaging
   valueProposition?: string;
   keyMessages: string[];
   avoidPhrases: string[];
-  
+
   // Visual (for reference)
   primaryColors: string[];
   logoUrl?: string;
-  
+
   // Audience Context
   targetAudience?: string;
   competitorContext?: string;
-  
+
   createdAt: Date;
   updatedAt: Date;
+
+  // Virtuals
+  fullContext: IBrandGuideContext;
 }
 
 const brandGuideSchema = new Schema<IBrandGuide>(

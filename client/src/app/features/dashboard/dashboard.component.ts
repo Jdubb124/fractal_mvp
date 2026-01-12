@@ -18,7 +18,7 @@ import { CampaignService } from '../../core/services/campaign.service';
         <!-- Welcome Section -->
         <div class="mb-8">
           <h1 class="text-2xl font-bold text-text-primary mb-2">
-            Welcome back, {{ authService.currentUser()?.name?.split(' ')[0] || 'there' }}!
+            Welcome back, {{ getUserFirstName() }}!
           </h1>
           <p class="text-text-secondary">
             Here's an overview of your campaign orchestration workspace.
@@ -188,5 +188,10 @@ export class DashboardComponent implements OnInit {
       archived: 'bg-text-muted/20 text-text-muted',
     };
     return classes[status] || 'bg-bg-hover text-text-secondary';
+  }
+
+  getUserFirstName(): string {
+    const name = this.authService.currentUser()?.name;
+    return name ? name.split(' ')[0] : 'there';
   }
 }

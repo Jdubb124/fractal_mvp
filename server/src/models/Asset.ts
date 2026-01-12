@@ -26,7 +26,8 @@ interface IMetaAdContent {
 }
 
 // Version subdocument interface
-interface IAssetVersion {
+export interface IAssetVersion {
+  _id?: mongoose.Types.ObjectId;
   versionName: string;
   strategy?: string;
   content: IEmailContent | IMetaAdContent;

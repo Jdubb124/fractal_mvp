@@ -21,34 +21,49 @@ interface ICampaignChannel {
   purpose?: string;
 }
 
+// Virtual property interface
+interface ICampaignContextSummary {
+  name: string;
+  objective?: string;
+  keyMessages: string[];
+  cta?: string;
+  urgency: UrgencyLevel;
+  segmentCount: number;
+  channels: ChannelType[];
+}
+
 export interface ICampaign extends Document {
   _id: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
   brandGuideId: mongoose.Types.ObjectId;
-  
+
   // Campaign Info
   name: string;
   objective?: string;
   description?: string;
   status: CampaignStatus;
-  
+
   // Targeting
   segments: ICampaignSegment[];
-  
+
   // Channels
   channels: ICampaignChannel[];
-  
+
   // Campaign Parameters
   keyMessages: string[];
   callToAction?: string;
   urgencyLevel: UrgencyLevel;
-  
+
   // Dates
   startDate?: Date;
   endDate?: Date;
-  
+
   createdAt: Date;
   updatedAt: Date;
+
+  // Virtuals
+  expectedAssetCount: number;
+  contextSummary: ICampaignContextSummary;
 }
 
 const campaignSegmentSchema = new Schema<ICampaignSegment>(

@@ -12,30 +12,45 @@ interface IDemographics {
   other?: string;
 }
 
+// Virtual property interface
+export interface IAudienceSummary {
+  name: string;
+  description?: string;
+  demographics: string;
+  propensity: PropensityLevel;
+  interests: string;
+  painPoints: string;
+  motivators: string;
+  tone?: string;
+}
+
 export interface IAudience extends Document {
   _id: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
   name: string;
   description?: string;
-  
+
   // Demographics
   demographics: IDemographics;
-  
+
   // Behavioral
   propensityLevel: PropensityLevel;
   interests: string[];
   painPoints: string[];
-  
+
   // Messaging Preferences
   preferredTone?: string;
   keyMotivators: string[];
-  
+
   // Meta
   estimatedSize?: number;
   isActive: boolean;
-  
+
   createdAt: Date;
   updatedAt: Date;
+
+  // Virtuals
+  summary: IAudienceSummary;
 }
 
 const demographicsSchema = new Schema<IDemographics>(

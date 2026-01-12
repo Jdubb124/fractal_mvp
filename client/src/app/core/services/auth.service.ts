@@ -37,9 +37,11 @@ export class AuthService {
   private readonly USER_KEY = 'fractal_user';
   
   private currentUserSignal = signal<User | null>(this.getStoredUser());
-  
+  private loadingSignal = signal<boolean>(false);
+
   currentUser = this.currentUserSignal.asReadonly();
   isAuthenticated = computed(() => !!this.currentUserSignal());
+  isLoading = this.loadingSignal.asReadonly();
 
   constructor(
     private http: HttpClient,
@@ -47,22 +49,32 @@ export class AuthService {
   ) {}
 
   login(credentials: LoginRequest): Observable<AuthResponse> {
+    this.loadingSignal.set(true);
     return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/login`, credentials)
       .pipe(
-        tap(response => this.handleAuthSuccess(response)),
+        tap(response => {
+          this.handleAuthSuccess(response);
+          this.loadingSignal.set(false);
+        }),
         catchError(error => {
           console.error('Login error:', error);
+          this.loadingSignal.set(false);
           return throwError(() => error);
         })
       );
   }
 
   register(data: RegisterRequest): Observable<AuthResponse> {
+    this.loadingSignal.set(true);
     return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/register`, data)
       .pipe(
-        tap(response => this.handleAuthSuccess(response)),
+        tap(response => {
+          this.handleAuthSuccess(response);
+          this.loadingSignal.set(false);
+        }),
         catchError(error => {
           console.error('Registration error:', error);
+          this.loadingSignal.set(false);
           return throwError(() => error);
         })
       );

@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -31,15 +31,51 @@ export interface Campaign {
   updatedAt?: Date;
 }
 
+export interface AssetVersion {
+  _id?: string;
+  versionName: string;
+  strategy?: string;
+  content: any;
+  status: 'pending' | 'generated' | 'edited' | 'approved';
+  generatedAt?: Date;
+  editedAt?: Date;
+}
+
+export interface Asset {
+  _id?: string;
+  campaignId: string;
+  audienceId: string;
+  channelType: 'email' | 'meta_ads';
+  assetType: string;
+  name: string;
+  versions: AssetVersion[];
+  generationPrompt?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface CampaignDetailResponse {
+  success: boolean;
+  data: {
+    campaign: Campaign;
+    assets: Asset[];
+    stats?: any;
+  };
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class CampaignService {
   private campaignsSignal = signal<Campaign[]>([]);
   private loadingSignal = signal<boolean>(false);
-  
+  private generatingSignal = signal<boolean>(false);
+
   campaigns = this.campaignsSignal.asReadonly();
   loading = this.loadingSignal.asReadonly();
+  isLoading = this.loadingSignal.asReadonly();
+  isGenerating = this.generatingSignal.asReadonly();
+  campaignCount = computed(() => this.campaignsSignal().length);
 
   constructor(private http: HttpClient) {}
 
@@ -54,8 +90,25 @@ export class CampaignService {
       );
   }
 
-  getCampaign(id: string): Observable<Campaign> {
-    return this.http.get<Campaign>(`${environment.apiUrl}/campaigns/${id}`);
+  getCampaigns(options?: { limit?: number }): Observable<any> {
+    this.loadingSignal.set(true);
+    const params = options?.limit ? `?limit=${options.limit}` : '';
+    return this.http.get<any>(`${environment.apiUrl}/campaigns${params}`)
+      .pipe(
+        tap(response => {
+          const campaigns = response.data?.campaigns || response.campaigns || response;
+          this.campaignsSignal.set(Array.isArray(campaigns) ? campaigns : []);
+          this.loadingSignal.set(false);
+        })
+      );
+  }
+
+  getCampaign(id: string): Observable<CampaignDetailResponse> {
+    this.loadingSignal.set(true);
+    return this.http.get<CampaignDetailResponse>(`${environment.apiUrl}/campaigns/${id}`)
+      .pipe(
+        tap(() => this.loadingSignal.set(false))
+      );
   }
 
   createCampaign(campaign: Partial<Campaign>): Observable<Campaign> {
@@ -91,5 +144,13 @@ export class CampaignService {
 
   generateCampaign(id: string): Observable<Campaign> {
     return this.http.post<Campaign>(`${environment.apiUrl}/campaigns/${id}/generate`, {});
+  }
+
+  generateAssets(id: string): Observable<CampaignDetailResponse> {
+    this.generatingSignal.set(true);
+    return this.http.post<CampaignDetailResponse>(`${environment.apiUrl}/campaigns/${id}/generate`, {})
+      .pipe(
+        tap(() => this.generatingSignal.set(false))
+      );
   }
 }
