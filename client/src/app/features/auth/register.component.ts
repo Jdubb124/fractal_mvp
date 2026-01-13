@@ -97,7 +97,7 @@ import { AuthService } from '../../core/services/auth.service';
 
           <p class="text-center text-text-secondary text-sm mt-6">
             Already have an account?
-            <a routerLink="/auth/login" class="text-accent-primary hover:underline">
+            <a routerLink="/login" class="text-accent-primary hover:underline">
               Sign in
             </a>
           </p>
@@ -127,7 +127,7 @@ export class RegisterComponent {
 
     this.authService.register(this.form.value).subscribe({
       next: () => {
-        this.router.navigate(['/brand']);
+        this.router.navigate(['/dashboard']);
       },
       error: (err) => {
         this.error.set(err.message || 'Registration failed. Please try again.');
