@@ -293,7 +293,7 @@ export class CampaignWizardComponent implements OnInit {
 
   ngOnInit(): void {
     if (!this.brandService.isLoaded()) {
-      this.brandService.getBrandGuide().subscribe();
+      this.brandService.getBrandGuides().subscribe();
     }
     this.audienceService.getAudiences().subscribe();
   }

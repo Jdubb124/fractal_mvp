@@ -29,80 +29,42 @@ const brandGuideSchema = new mongoose_1.Schema({
         type: mongoose_1.Schema.Types.ObjectId,
         ref: 'User',
         required: true,
-        unique: true, // One brand guide per user
+        // No unique constraint - users can have multiple brand guides
     },
-    companyName: {
+    name: {
         type: String,
-        required: [true, 'Company name is required'],
+        required: [true, 'Brand guide name is required'],
         trim: true,
-        maxlength: [200, 'Company name cannot exceed 200 characters'],
+        maxlength: [100, 'Name cannot exceed 100 characters'],
     },
-    industry: {
-        type: String,
-        trim: true,
-        maxlength: [100, 'Industry cannot exceed 100 characters'],
-    },
-    // Voice & Tone
-    voiceAttributes: [{
-            type: String,
-            trim: true,
-            maxlength: [50, 'Voice attribute cannot exceed 50 characters'],
-        }],
-    toneGuidelines: {
-        type: String,
-        maxlength: [2000, 'Tone guidelines cannot exceed 2000 characters'],
-    },
-    // Messaging
-    valueProposition: {
-        type: String,
-        maxlength: [1000, 'Value proposition cannot exceed 1000 characters'],
-    },
-    keyMessages: [{
-            type: String,
-            trim: true,
-            maxlength: [500, 'Key message cannot exceed 500 characters'],
-        }],
-    avoidPhrases: [{
-            type: String,
-            trim: true,
-            maxlength: [200, 'Avoid phrase cannot exceed 200 characters'],
-        }],
-    // Visual
-    primaryColors: [{
+    colors: [{
             type: String,
             trim: true,
             match: [/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Invalid hex color'],
         }],
-    logoUrl: {
+    tone: {
         type: String,
         trim: true,
+        maxlength: [500, 'Tone cannot exceed 500 characters'],
     },
-    // Audience Context
-    targetAudience: {
+    coreMessage: {
         type: String,
-        maxlength: [1000, 'Target audience description cannot exceed 1000 characters'],
-    },
-    competitorContext: {
-        type: String,
-        maxlength: [1000, 'Competitor context cannot exceed 1000 characters'],
+        trim: true,
+        maxlength: [1000, 'Core message cannot exceed 1000 characters'],
     },
 }, {
     timestamps: true,
 });
-// Index for user lookup
+// Compound index for user lookup and unique name per user
 brandGuideSchema.index({ userId: 1 });
+brandGuideSchema.index({ userId: 1, name: 1 }, { unique: true });
 // Virtual for full context (used in AI prompts)
 brandGuideSchema.virtual('fullContext').get(function () {
     return {
-        company: this.companyName,
-        industry: this.industry,
-        voice: this.voiceAttributes.join(', '),
-        tone: this.toneGuidelines,
-        valueProposition: this.valueProposition,
-        keyMessages: this.keyMessages,
-        avoid: this.avoidPhrases,
-        audience: this.targetAudience,
-        competitors: this.competitorContext,
+        name: this.name,
+        colors: this.colors,
+        tone: this.tone,
+        coreMessage: this.coreMessage,
     };
 });
 // Enable virtuals in JSON

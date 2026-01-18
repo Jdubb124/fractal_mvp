@@ -62,50 +62,30 @@ exports.validateLogin = [
 ];
 // Brand Guide validators
 exports.validateBrandGuide = [
-    (0, express_validator_1.body)('companyName')
+    (0, express_validator_1.body)('name')
         .trim()
         .notEmpty()
-        .withMessage('Company name is required')
-        .isLength({ max: 200 })
-        .withMessage('Company name cannot exceed 200 characters'),
-    (0, express_validator_1.body)('industry')
-        .optional()
-        .trim()
+        .withMessage('Brand guide name is required')
         .isLength({ max: 100 })
-        .withMessage('Industry cannot exceed 100 characters'),
-    (0, express_validator_1.body)('voiceAttributes')
+        .withMessage('Name cannot exceed 100 characters'),
+    (0, express_validator_1.body)('colors')
         .optional()
-        .isArray()
-        .withMessage('Voice attributes must be an array'),
-    (0, express_validator_1.body)('voiceAttributes.*')
-        .optional()
-        .trim()
-        .isLength({ max: 50 })
-        .withMessage('Each voice attribute cannot exceed 50 characters'),
-    (0, express_validator_1.body)('toneGuidelines')
-        .optional()
-        .isLength({ max: 2000 })
-        .withMessage('Tone guidelines cannot exceed 2000 characters'),
-    (0, express_validator_1.body)('valueProposition')
-        .optional()
-        .isLength({ max: 1000 })
-        .withMessage('Value proposition cannot exceed 1000 characters'),
-    (0, express_validator_1.body)('keyMessages')
-        .optional()
-        .isArray()
-        .withMessage('Key messages must be an array'),
-    (0, express_validator_1.body)('avoidPhrases')
-        .optional()
-        .isArray()
-        .withMessage('Avoid phrases must be an array'),
-    (0, express_validator_1.body)('primaryColors')
-        .optional()
-        .isArray()
-        .withMessage('Primary colors must be an array'),
-    (0, express_validator_1.body)('primaryColors.*')
+        .isArray({ max: 6 })
+        .withMessage('Colors must be an array with maximum 6 items'),
+    (0, express_validator_1.body)('colors.*')
         .optional()
         .matches(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/)
         .withMessage('Each color must be a valid hex code'),
+    (0, express_validator_1.body)('tone')
+        .optional()
+        .trim()
+        .isLength({ max: 500 })
+        .withMessage('Tone cannot exceed 500 characters'),
+    (0, express_validator_1.body)('coreMessage')
+        .optional()
+        .trim()
+        .isLength({ max: 1000 })
+        .withMessage('Core message cannot exceed 1000 characters'),
     exports.handleValidationErrors,
 ];
 // Audience validators

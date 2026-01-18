@@ -5,19 +5,20 @@ import { environment } from '../../../environments/environment';
 
 export interface BrandGuide {
   _id?: string;
-  companyName: string;
-  industry?: string;
-  voiceAttributes: string[];
-  toneGuidelines?: string;
-  valueProposition?: string;
-  keyMessages: string[];
-  avoidPhrases?: string[];
-  primaryColors?: string[];
-  logoUrl?: string;
-  targetAudience?: string;
-  competitorContext?: string;
+  name: string;
+  colors: string[];
+  tone?: string;
+  coreMessage?: string;
   createdAt?: Date;
   updatedAt?: Date;
+}
+
+interface BrandGuidesResponse {
+  success: boolean;
+  data: {
+    brandGuides: BrandGuide[];
+    count: number;
+  };
 }
 
 interface BrandGuideResponse {
@@ -31,69 +32,98 @@ interface BrandGuideResponse {
   providedIn: 'root'
 })
 export class BrandService {
-  private brandGuideSignal = signal<BrandGuide | null>(null);
+  private brandGuidesSignal = signal<BrandGuide[]>([]);
+  private selectedIdSignal = signal<string | null>(null);
   private loadedSignal = signal<boolean>(false);
-  
-  brandGuide = this.brandGuideSignal.asReadonly();
-  hasBrandGuide = computed(() => this.brandGuideSignal() !== null);
+  private loadingSignal = signal<boolean>(false);
+
+  brandGuides = this.brandGuidesSignal.asReadonly();
+  selectedBrandGuideId = this.selectedIdSignal.asReadonly();
   isLoaded = computed(() => this.loadedSignal());
+  isLoading = computed(() => this.loadingSignal());
+  brandGuideCount = computed(() => this.brandGuidesSignal().length);
+  hasBrandGuide = computed(() => this.brandGuidesSignal().length > 0);
+
+  selectedBrandGuide = computed(() => {
+    const id = this.selectedIdSignal();
+    const guides = this.brandGuidesSignal();
+    return guides.find(g => g._id === id) || guides[0] || null;
+  });
 
   constructor(private http: HttpClient) {}
 
-  getBrandGuide(): Observable<BrandGuide | null> {
-    this.loadedSignal.set(true);
-    return this.http.get<BrandGuideResponse | BrandGuide>(`${environment.apiUrl}/brand`)
+  getBrandGuides(): Observable<BrandGuide[]> {
+    this.loadingSignal.set(true);
+    return this.http.get<BrandGuidesResponse>(`${environment.apiUrl}/brand`)
       .pipe(
-        map(response => {
-          // Handle both response formats
-          if ('data' in response && response.data) {
-            return response.data.brandGuide || response.data;
-          }
-          return response as BrandGuide;
-        }),
-        tap(guide => {
-          this.brandGuideSignal.set(guide);
+        map(response => response.data.brandGuides),
+        tap(guides => {
+          this.brandGuidesSignal.set(guides);
           this.loadedSignal.set(true);
+          this.loadingSignal.set(false);
         }),
         catchError(error => {
           this.loadedSignal.set(true);
+          this.loadingSignal.set(false);
           if (error.status === 404) {
-            this.brandGuideSignal.set(null);
-            return of(null);
+            this.brandGuidesSignal.set([]);
+            return of([]);
           }
           throw error;
         })
       );
   }
 
-  createBrandGuide(guide: Partial<BrandGuide>): Observable<BrandGuide> {
-    return this.http.post<BrandGuideResponse | BrandGuide>(`${environment.apiUrl}/brand`, guide)
+  getBrandGuide(id: string): Observable<BrandGuide> {
+    return this.http.get<BrandGuideResponse>(`${environment.apiUrl}/brand/${id}`)
       .pipe(
-        map(response => {
-          if ('data' in response && response.data) {
-            return response.data.brandGuide || response.data;
-          }
-          return response as BrandGuide;
-        }),
+        map(response => response.data.brandGuide)
+      );
+  }
+
+  createBrandGuide(guide: Partial<BrandGuide>): Observable<BrandGuide> {
+    return this.http.post<BrandGuideResponse>(`${environment.apiUrl}/brand`, guide)
+      .pipe(
+        map(response => response.data.brandGuide),
         tap(newGuide => {
-          this.brandGuideSignal.set(newGuide);
+          this.brandGuidesSignal.update(guides => [newGuide, ...guides]);
+          // Auto-select the new guide
+          if (newGuide._id) {
+            this.selectedIdSignal.set(newGuide._id);
+          }
         })
       );
   }
 
   updateBrandGuide(id: string, guide: Partial<BrandGuide>): Observable<BrandGuide> {
-    return this.http.put<BrandGuideResponse | BrandGuide>(`${environment.apiUrl}/brand/${id}`, guide)
+    return this.http.put<BrandGuideResponse>(`${environment.apiUrl}/brand/${id}`, guide)
       .pipe(
-        map(response => {
-          if ('data' in response && response.data) {
-            return response.data.brandGuide || response.data;
-          }
-          return response as BrandGuide;
-        }),
+        map(response => response.data.brandGuide),
         tap(updated => {
-          this.brandGuideSignal.set(updated);
+          this.brandGuidesSignal.update(guides =>
+            guides.map(g => g._id === id ? updated : g)
+          );
         })
       );
   }
-}
 
+  deleteBrandGuide(id: string): Observable<void> {
+    return this.http.delete<{ success: boolean }>(`${environment.apiUrl}/brand/${id}`)
+      .pipe(
+        tap(() => {
+          this.brandGuidesSignal.update(guides =>
+            guides.filter(g => g._id !== id)
+          );
+          // Clear selection if deleted guide was selected
+          if (this.selectedIdSignal() === id) {
+            this.selectedIdSignal.set(null);
+          }
+        }),
+        map(() => undefined)
+      );
+  }
+
+  selectBrandGuide(id: string | null): void {
+    this.selectedIdSignal.set(id);
+  }
+}

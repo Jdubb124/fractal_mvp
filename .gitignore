@@ -29,3 +29,6 @@ logs/
 
 # Coverage
 coverage/
+
+#CC Prompting
+CC_Prompting/

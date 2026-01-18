@@ -9,6 +9,8 @@ export declare const LIMITS: {
     MAX_SEGMENTS_PER_CAMPAIGN: number;
     MAX_CHANNELS_PER_CAMPAIGN: number;
     MAX_VERSIONS_PER_ASSET: number;
+    MAX_BRAND_GUIDES_PER_USER: number;
+    MAX_COLORS_PER_BRAND_GUIDE: number;
 };
 export declare const CAMPAIGN_STATUS: {
     readonly DRAFT: "draft";

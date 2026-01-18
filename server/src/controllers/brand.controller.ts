@@ -1,19 +1,40 @@
 import { Request, Response } from 'express';
 import { BrandGuide } from '../models';
 import { AppError, asyncHandler } from '../middleware/errorHandler';
+import { LIMITS } from '../config/constants';
 
-// @desc    Get user's brand guide
+// @desc    Get all brand guides for user
 // @route   GET /api/brand
 // @access  Private
-export const getBrandGuide = asyncHandler(async (req: Request, res: Response) => {
-  const brandGuide = await BrandGuide.findOne({ userId: req.userId });
+export const getBrandGuides = asyncHandler(async (req: Request, res: Response) => {
+  const brandGuides = await BrandGuide.find({ userId: req.userId })
+    .sort({ createdAt: -1 });
 
   res.json({
     success: true,
     data: {
-      brandGuide: brandGuide || null,
-      exists: !!brandGuide,
+      brandGuides,
+      count: brandGuides.length,
     },
+  });
+});
+
+// @desc    Get single brand guide
+// @route   GET /api/brand/:id
+// @access  Private
+export const getBrandGuide = asyncHandler(async (req: Request, res: Response) => {
+  const brandGuide = await BrandGuide.findOne({
+    _id: req.params.id,
+    userId: req.userId,
+  });
+
+  if (!brandGuide) {
+    throw new AppError('Brand guide not found', 404);
+  }
+
+  res.json({
+    success: true,
+    data: { brandGuide },
   });
 });
 
@@ -21,10 +42,22 @@ export const getBrandGuide = asyncHandler(async (req: Request, res: Response) =>
 // @route   POST /api/brand
 // @access  Private
 export const createBrandGuide = asyncHandler(async (req: Request, res: Response) => {
-  // Check if user already has a brand guide
-  const existing = await BrandGuide.findOne({ userId: req.userId });
+  // Check limit
+  const count = await BrandGuide.countDocuments({ userId: req.userId });
+  if (count >= LIMITS.MAX_BRAND_GUIDES_PER_USER) {
+    throw new AppError(
+      `Maximum of ${LIMITS.MAX_BRAND_GUIDES_PER_USER} brand guides allowed`,
+      400
+    );
+  }
+
+  // Check for duplicate name
+  const existing = await BrandGuide.findOne({
+    userId: req.userId,
+    name: req.body.name,
+  });
   if (existing) {
-    throw new AppError('Brand guide already exists. Use PUT to update.', 400);
+    throw new AppError('A brand guide with this name already exists', 400);
   }
 
   const brandGuide = await BrandGuide.create({
@@ -43,29 +76,29 @@ export const createBrandGuide = asyncHandler(async (req: Request, res: Response)
 // @route   PUT /api/brand/:id
 // @access  Private
 export const updateBrandGuide = asyncHandler(async (req: Request, res: Response) => {
-  let brandGuide = await BrandGuide.findOne({ 
-    _id: req.params.id, 
-    userId: req.userId 
+  let brandGuide = await BrandGuide.findOne({
+    _id: req.params.id,
+    userId: req.userId,
   });
 
   if (!brandGuide) {
     throw new AppError('Brand guide not found', 404);
   }
 
+  // Check for duplicate name if name is being changed
+  if (req.body.name && req.body.name !== brandGuide.name) {
+    const existing = await BrandGuide.findOne({
+      userId: req.userId,
+      name: req.body.name,
+      _id: { $ne: req.params.id },
+    });
+    if (existing) {
+      throw new AppError('A brand guide with this name already exists', 400);
+    }
+  }
+
   // Update fields
-  const allowedUpdates = [
-    'companyName',
-    'industry',
-    'voiceAttributes',
-    'toneGuidelines',
-    'valueProposition',
-    'keyMessages',
-    'avoidPhrases',
-    'primaryColors',
-    'logoUrl',
-    'targetAudience',
-    'competitorContext',
-  ];
+  const allowedUpdates = ['name', 'colors', 'tone', 'coreMessage'];
 
   allowedUpdates.forEach(field => {
     if (req.body[field] !== undefined) {
@@ -86,9 +119,9 @@ export const updateBrandGuide = asyncHandler(async (req: Request, res: Response)
 // @route   DELETE /api/brand/:id
 // @access  Private
 export const deleteBrandGuide = asyncHandler(async (req: Request, res: Response) => {
-  const brandGuide = await BrandGuide.findOneAndDelete({ 
-    _id: req.params.id, 
-    userId: req.userId 
+  const brandGuide = await BrandGuide.findOneAndDelete({
+    _id: req.params.id,
+    userId: req.userId,
   });
 
   if (!brandGuide) {
@@ -104,9 +137,16 @@ export const deleteBrandGuide = asyncHandler(async (req: Request, res: Response)
 // @desc    Get brand guide context for AI (internal use)
 // @route   N/A (used by generation service)
 // @access  Internal
-export const getBrandContext = async (userId: string) => {
-  const brandGuide = await BrandGuide.findOne({ userId });
-  
+export const getBrandContext = async (userId: string, brandGuideId?: string) => {
+  let brandGuide;
+
+  if (brandGuideId) {
+    brandGuide = await BrandGuide.findOne({ _id: brandGuideId, userId });
+  } else {
+    // Get the first brand guide if no specific ID provided
+    brandGuide = await BrandGuide.findOne({ userId }).sort({ createdAt: -1 });
+  }
+
   if (!brandGuide) {
     return null;
   }

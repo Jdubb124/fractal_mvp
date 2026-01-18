@@ -17,14 +17,10 @@ function buildEmailPrompt(brandGuide, campaign, audience, strategy) {
     return `You are an expert marketing copywriter creating email content.
 
 BRAND CONTEXT:
-- Company: ${brandGuide.companyName}
-- Industry: ${brandGuide.industry || 'Not specified'}
-- Voice Attributes: ${brandGuide.voiceAttributes?.join(', ') || 'Professional, friendly'}
-- Tone Guidelines: ${brandGuide.toneGuidelines || 'Maintain a professional yet approachable tone'}
-- Value Proposition: ${brandGuide.valueProposition || 'Not specified'}
-
-PHRASES TO AVOID:
-${brandGuide.avoidPhrases?.map(p => `- ${p}`).join('\n') || '- None specified'}
+- Brand Name: ${brandGuide.name}
+- Brand Colors: ${brandGuide.colors?.join(', ') || 'Not specified'}
+- Brand Tone: ${brandGuide.tone || 'Professional, friendly'}
+- Core Message: ${brandGuide.coreMessage || 'Not specified'}
 
 CAMPAIGN DETAILS:
 - Campaign Name: ${campaign.name}
@@ -69,13 +65,10 @@ function buildMetaAdPrompt(brandGuide, campaign, audience, strategy) {
     return `You are an expert social media advertising copywriter creating Meta (Facebook/Instagram) ad content.
 
 BRAND CONTEXT:
-- Company: ${brandGuide.companyName}
-- Industry: ${brandGuide.industry || 'Not specified'}
-- Voice Attributes: ${brandGuide.voiceAttributes?.join(', ') || 'Professional, friendly'}
-- Tone Guidelines: ${brandGuide.toneGuidelines || 'Maintain a professional yet approachable tone'}
-
-PHRASES TO AVOID:
-${brandGuide.avoidPhrases?.map(p => `- ${p}`).join('\n') || '- None specified'}
+- Brand Name: ${brandGuide.name}
+- Brand Colors: ${brandGuide.colors?.join(', ') || 'Not specified'}
+- Brand Tone: ${brandGuide.tone || 'Professional, friendly'}
+- Core Message: ${brandGuide.coreMessage || 'Not specified'}
 
 CAMPAIGN DETAILS:
 - Campaign Name: ${campaign.name}

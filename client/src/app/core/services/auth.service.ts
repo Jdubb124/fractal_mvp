@@ -1,7 +1,7 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap, catchError, throwError } from 'rxjs';
+import { Observable, tap, catchError, throwError, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 export interface User {
@@ -12,9 +12,12 @@ export interface User {
 }
 
 export interface AuthResponse {
-  token: string;
-  user: User;
+  success: boolean;
   message?: string;
+  data: {
+    user: User;
+    token: string;
+  };
 }
 
 export interface LoginRequest {
@@ -92,8 +95,9 @@ export class AuthService {
   }
 
   refreshUser(): Observable<User> {
-    return this.http.get<User>(`${environment.apiUrl}/auth/me`)
+    return this.http.get<{ success: boolean; data: { user: User } }>(`${environment.apiUrl}/auth/me`)
       .pipe(
+        map(response => response.data.user),
         tap(user => {
           this.currentUserSignal.set(user);
           localStorage.setItem(this.USER_KEY, JSON.stringify(user));
@@ -102,9 +106,9 @@ export class AuthService {
   }
 
   private handleAuthSuccess(response: AuthResponse): void {
-    localStorage.setItem(this.TOKEN_KEY, response.token);
-    localStorage.setItem(this.USER_KEY, JSON.stringify(response.user));
-    this.currentUserSignal.set(response.user);
+    localStorage.setItem(this.TOKEN_KEY, response.data.token);
+    localStorage.setItem(this.USER_KEY, JSON.stringify(response.data.user));
+    this.currentUserSignal.set(response.data.user);
   }
 
   private getStoredUser(): User | null {

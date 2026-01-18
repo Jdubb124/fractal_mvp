@@ -41,9 +41,9 @@ import { CampaignService } from '../../core/services/campaign.service';
           </div>
           <div class="stat-card card-hover cursor-pointer" routerLink="/brand">
             <div class="stat-value" [class]="brandService.hasBrandGuide() ? 'text-success' : 'text-warning'">
-              {{ brandService.hasBrandGuide() ? '✓' : '!' }}
+              {{ brandService.hasBrandGuide() ? brandService.brandGuideCount() : '!' }}
             </div>
-            <div class="stat-label">Brand Guide</div>
+            <div class="stat-label">Brand {{ brandService.brandGuideCount() === 1 ? 'Guide' : 'Guides' }}</div>
           </div>
         </div>
 
@@ -170,7 +170,7 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     if (!this.brandService.isLoaded()) {
-      this.brandService.getBrandGuide().subscribe();
+      this.brandService.getBrandGuides().subscribe();
     }
     this.audienceService.getAudiences().subscribe();
     this.campaignService.getCampaigns({ limit: 5 }).subscribe();

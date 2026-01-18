@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import {
+  getBrandGuides,
   getBrandGuide,
   createBrandGuide,
   updateBrandGuide,
@@ -14,10 +15,11 @@ const router = Router();
 router.use(protect);
 
 router.route('/')
-  .get(getBrandGuide)
+  .get(getBrandGuides)
   .post(validateBrandGuide, createBrandGuide);
 
 router.route('/:id')
+  .get(getBrandGuide)
   .put(validateBrandGuide, updateBrandGuide)
   .delete(deleteBrandGuide);
 
