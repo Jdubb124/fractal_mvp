@@ -150,20 +150,22 @@ audienceSchema.index({ userId: 1, isActive: 1 });
 
 // Virtual for audience summary (used in AI prompts)
 audienceSchema.virtual('summary').get(function () {
-  const demo = this.demographics;
+  const demo = this.demographics || {};
   let ageStr = '';
   if (demo.ageRange?.min || demo.ageRange?.max) {
     ageStr = `Ages ${demo.ageRange.min || '?'}-${demo.ageRange.max || '?'}`;
   }
-  
+
+  const locations = (demo.location || []).join(', ');
+
   return {
     name: this.name,
     description: this.description,
-    demographics: [ageStr, demo.income, demo.location.join(', ')].filter(Boolean).join(', '),
+    demographics: [ageStr, demo.income, locations].filter(Boolean).join(', '),
     propensity: this.propensityLevel,
-    interests: this.interests.join(', '),
-    painPoints: this.painPoints.join(', '),
-    motivators: this.keyMotivators.join(', '),
+    interests: (this.interests || []).join(', '),
+    painPoints: (this.painPoints || []).join(', '),
+    motivators: (this.keyMotivators || []).join(', '),
     tone: this.preferredTone,
   };
 });

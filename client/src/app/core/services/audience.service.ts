@@ -13,7 +13,7 @@ export interface Audience {
     location: string[];
     other?: string;
   };
-  propensityLevel: 'low' | 'medium' | 'high';
+  propensityLevel: 'Low' | 'Medium' | 'High';
   interests: string[];
   painPoints: string[];
   preferredTone?: string;

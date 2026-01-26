@@ -38,10 +38,14 @@ export const getCampaigns = asyncHandler(async (req: Request, res: Response) => 
 // @route   GET /api/campaigns/:id
 // @access  Private
 export const getCampaign = asyncHandler(async (req: Request, res: Response) => {
-  const campaign = await Campaign.findOne({ 
-    _id: req.params.id, 
-    userId: req.userId 
-  }).populate('segments.audienceId', 'name description propensityLevel');
+  const campaign = await Campaign.findOne({
+    _id: req.params.id,
+    userId: req.userId
+  });
+
+  if (campaign && campaign.segments && campaign.segments.length > 0) {
+    await campaign.populate('segments.audienceId', 'name description propensityLevel');
+  }
 
   if (!campaign) {
     throw new AppError('Campaign not found', 404);
@@ -50,16 +54,19 @@ export const getCampaign = asyncHandler(async (req: Request, res: Response) => {
   // Get associated assets
   const assets = await Asset.find({ campaignId: campaign._id });
 
+  const segments = campaign.segments || [];
+  const channels = campaign.channels || [];
+
   res.json({
     success: true,
-    data: { 
+    data: {
       campaign,
       assets,
       stats: {
-        segmentCount: campaign.segments.length,
-        channelCount: campaign.channels.filter(c => c.enabled).length,
+        segmentCount: segments.length,
+        channelCount: channels.filter(c => c.enabled).length,
         assetCount: assets.length,
-        expectedAssetCount: campaign.expectedAssetCount,
+        expectedAssetCount: segments.length * channels.filter(c => c.enabled).length,
       }
     },
   });

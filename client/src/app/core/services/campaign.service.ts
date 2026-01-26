@@ -1,6 +1,6 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 export interface Channel {
@@ -112,8 +112,9 @@ export class CampaignService {
   }
 
   createCampaign(campaign: Partial<Campaign>): Observable<Campaign> {
-    return this.http.post<Campaign>(`${environment.apiUrl}/campaigns`, campaign)
+    return this.http.post<{ success: boolean; data: { campaign: Campaign } }>(`${environment.apiUrl}/campaigns`, campaign)
       .pipe(
+        map(response => response.data.campaign),
         tap(newCampaign => {
           this.campaignsSignal.update(campaigns => [newCampaign, ...campaigns]);
         })

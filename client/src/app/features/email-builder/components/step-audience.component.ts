@@ -57,13 +57,13 @@ import { EmailBuilderService } from '../services/email-builder.service';
                     <div class="flex flex-wrap gap-2 mt-2">
                       <!-- Propensity Badge -->
                       <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"
-                        [class.bg-success/20]="audience.propensityLevel === 'high'"
-                        [class.text-success]="audience.propensityLevel === 'high'"
-                        [class.bg-warning/20]="audience.propensityLevel === 'medium'"
-                        [class.text-warning]="audience.propensityLevel === 'medium'"
-                        [class.bg-error/20]="audience.propensityLevel === 'low'"
-                        [class.text-error]="audience.propensityLevel === 'low'">
-                        {{ audience.propensityLevel | titlecase }} Propensity
+                        [class.bg-success/20]="audience.propensityLevel === 'High'"
+                        [class.text-success]="audience.propensityLevel === 'High'"
+                        [class.bg-warning/20]="audience.propensityLevel === 'Medium'"
+                        [class.text-warning]="audience.propensityLevel === 'Medium'"
+                        [class.bg-error/20]="audience.propensityLevel === 'Low'"
+                        [class.text-error]="audience.propensityLevel === 'Low'">
+                        {{ audience.propensityLevel }} Propensity
                       </span>
                       @if (audience.estimatedSize) {
                         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-bg-hover text-text-secondary">
