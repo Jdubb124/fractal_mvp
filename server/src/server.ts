@@ -13,6 +13,7 @@ import brandRoutes from './routes/brand.routes';
 import audienceRoutes from './routes/audience.routes';
 import campaignRoutes from './routes/campaign.routes';
 import assetRoutes from './routes/asset.routes';
+import emailRoutes from './routes/email.routes';
 
 // Load environment variables
 dotenv.config();
@@ -48,6 +49,7 @@ app.use('/api/brand', brandRoutes);
 app.use('/api/audiences', audienceRoutes);
 app.use('/api/campaigns', campaignRoutes);
 app.use('/api/assets', assetRoutes);
+app.use('/api/emails', emailRoutes);
 
 // Error handling
 app.use(notFound);

@@ -4,6 +4,9 @@
 .env.*.local
 *.env
 
+#Agentic Context Documentation
+agenticcontextdocs/
+
 # Node
 node_modules/
 npm-debug.log

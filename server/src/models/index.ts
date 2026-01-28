@@ -3,3 +3,4 @@ export { default as BrandGuide, IBrandGuide } from './BrandGuide';
 export { default as Audience, IAudience } from './Audience';
 export { default as Campaign, ICampaign } from './Campaign';
 export { default as Asset, IAsset } from './Asset';
+export { default as EmailAsset, IEmailAsset, IEmailContent, IEmailHtml, IEmailAssetMeta, IEditRecord } from './EmailAsset';

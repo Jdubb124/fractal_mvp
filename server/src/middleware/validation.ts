@@ -1,6 +1,6 @@
-import { body, param, validationResult } from 'express-validator';
+import { body, param, query, validationResult } from 'express-validator';
 import { Request, Response, NextFunction } from 'express';
-import { PROPENSITY_LEVELS, CHANNEL_TYPES, URGENCY_LEVELS } from '../config/constants';
+import { PROPENSITY_LEVELS, CHANNEL_TYPES, URGENCY_LEVELS, EMAIL_TEMPLATES, EXPORT_FORMATS, EMAIL_GENERATION_MODES } from '../config/constants';
 
 // Validation result handler
 export const handleValidationErrors = (
@@ -191,5 +191,92 @@ export const validateAssetUpdate = [
     .optional()
     .isObject()
     .withMessage('Content must be an object'),
+  handleValidationErrors,
+];
+
+// Email validators
+export const validateGenerateEmails = [
+  body('campaignId')
+    .notEmpty()
+    .withMessage('Campaign ID is required')
+    .isMongoId()
+    .withMessage('Invalid campaign ID format'),
+  body('templateId')
+    .optional()
+    .isIn(Object.values(EMAIL_TEMPLATES))
+    .withMessage(`Template must be one of: ${Object.values(EMAIL_TEMPLATES).join(', ')}`),
+  body('regenerate')
+    .optional()
+    .isBoolean()
+    .withMessage('Regenerate must be a boolean'),
+  body('generationMode')
+    .optional()
+    .isIn(Object.values(EMAIL_GENERATION_MODES))
+    .withMessage(`Generation mode must be one of: ${Object.values(EMAIL_GENERATION_MODES).join(', ')}`),
+  handleValidationErrors,
+];
+
+export const validateExport = [
+  query('format')
+    .optional()
+    .isIn(Object.values(EXPORT_FORMATS))
+    .withMessage(`Format must be one of: ${Object.values(EXPORT_FORMATS).join(', ')}`),
+  query('download')
+    .optional()
+    .isIn(['true', 'false'])
+    .withMessage('Download must be true or false'),
+  handleValidationErrors,
+];
+
+export const validateBulkExport = [
+  body('assetIds')
+    .isArray({ min: 1 })
+    .withMessage('Asset IDs array is required with at least one ID'),
+  body('assetIds.*')
+    .isMongoId()
+    .withMessage('Each asset ID must be a valid ID'),
+  body('format')
+    .optional()
+    .isIn(Object.values(EXPORT_FORMATS))
+    .withMessage(`Format must be one of: ${Object.values(EXPORT_FORMATS).join(', ')}`),
+  body('organizationStrategy')
+    .optional()
+    .isIn(['flat', 'by_audience', 'by_type'])
+    .withMessage('Organization strategy must be flat, by_audience, or by_type'),
+  handleValidationErrors,
+];
+
+export const validateUpdateEmail = [
+  body('html')
+    .notEmpty()
+    .withMessage('HTML content is required')
+    .isString()
+    .withMessage('HTML must be a string'),
+  body('editType')
+    .notEmpty()
+    .withMessage('Edit type is required')
+    .isIn(['manual', 'ai_assisted'])
+    .withMessage('Edit type must be manual or ai_assisted'),
+  body('prompt')
+    .optional()
+    .isString()
+    .withMessage('Prompt must be a string')
+    .isLength({ max: 1000 })
+    .withMessage('Prompt cannot exceed 1000 characters'),
+  handleValidationErrors,
+];
+
+export const validateAIEdit = [
+  body('prompt')
+    .notEmpty()
+    .withMessage('Prompt is required')
+    .isString()
+    .withMessage('Prompt must be a string')
+    .isLength({ min: 1, max: 1000 })
+    .withMessage('Prompt must be between 1 and 1000 characters'),
+  body('preserveStructure')
+    .optional()
+    .isBoolean()
+    .withMessage('preserveStructure must be a boolean'),
   handleValidationErrors,
 ];

@@ -187,20 +187,24 @@ campaignSchema.index({ userId: 1, createdAt: -1 });
 
 // Virtual for asset count calculation
 campaignSchema.virtual('expectedAssetCount').get(function () {
-  const enabledChannels = this.channels.filter(c => c.enabled).length;
-  return this.segments.length * enabledChannels;
+  const channels = this.channels || [];
+  const segments = this.segments || [];
+  const enabledChannels = channels.filter(c => c.enabled).length;
+  return segments.length * enabledChannels;
 });
 
 // Virtual for campaign summary (used in AI prompts)
 campaignSchema.virtual('contextSummary').get(function () {
+  const channels = this.channels || [];
+  const segments = this.segments || [];
   return {
     name: this.name,
     objective: this.objective,
-    keyMessages: this.keyMessages,
+    keyMessages: this.keyMessages || [],
     cta: this.callToAction,
     urgency: this.urgencyLevel,
-    segmentCount: this.segments.length,
-    channels: this.channels.filter(c => c.enabled).map(c => c.type),
+    segmentCount: segments.length,
+    channels: channels.filter(c => c.enabled).map(c => c.type),
   };
 });
 
