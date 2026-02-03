@@ -170,11 +170,11 @@ export const validateCampaign = [
     .isIn(Object.values(URGENCY_LEVELS))
     .withMessage(`Urgency level must be one of: ${Object.values(URGENCY_LEVELS).join(', ')}`),
   body('startDate')
-    .optional()
+    .optional({ values: 'falsy' })
     .isISO8601()
     .withMessage('Start date must be a valid date'),
   body('endDate')
-    .optional()
+    .optional({ values: 'falsy' })
     .isISO8601()
     .withMessage('End date must be a valid date'),
   handleValidationErrors,

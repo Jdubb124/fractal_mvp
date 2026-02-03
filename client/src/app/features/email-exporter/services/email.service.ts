@@ -43,14 +43,22 @@ export class EmailExporterService {
     regenerate = false
   ): Observable<GenerateEmailsResponse> {
     this.generatingSignal.set(true);
+    const payload = { campaignId, templateId, regenerate };
+    console.log('[EMAIL-DEBUG] Frontend: generateEmails called', payload);
+    console.log('[EMAIL-DEBUG] Frontend: POST ->', `${this.baseUrl}/generate`);
     return this.http
       .post<{ success: boolean; data: GenerateEmailsResponse }>(
         `${this.baseUrl}/generate`,
-        { campaignId, templateId, regenerate }
+        payload
       )
       .pipe(
+        tap({
+          next: (raw) => console.log('[EMAIL-DEBUG] Frontend: raw API response', { success: raw.success, assetCount: raw.data?.emailAssets?.length, totalGenerated: raw.data?.totalGenerated, generationTime: raw.data?.generationTime }),
+          error: (err) => console.error('[EMAIL-DEBUG] Frontend: API error', { status: err.status, message: err.message, error: err.error }),
+        }),
         map((res) => res.data),
         tap((result) => {
+          console.log('[EMAIL-DEBUG] Frontend: mapped result', { totalGenerated: result.totalGenerated, generationTime: result.generationTime, assetIds: result.emailAssets?.map((a: any) => a._id) });
           this.emailAssetsSignal.set(result.emailAssets);
           this.generatingSignal.set(false);
         })

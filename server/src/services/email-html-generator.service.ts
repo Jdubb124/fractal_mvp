@@ -315,7 +315,12 @@ export async function generateEmailHtml(
 ): Promise<EmailHtmlGenerationResult> {
   const prompt = buildEmailHtmlPrompt(context);
 
+  console.log('[EMAIL-DEBUG] generateEmailHtml: building prompt', { promptLength: prompt.length, model: CLAUDE_MODEL, audience: context.audience.name, strategy: context.versionStrategy });
+  console.log('[EMAIL-DEBUG] generateEmailHtml: prompt preview (first 500 chars)', prompt.substring(0, 500));
+
   try {
+    console.log('[EMAIL-DEBUG] generateEmailHtml: calling anthropic.messages.create...', { model: CLAUDE_MODEL, max_tokens: 8000 });
+    const apiCallStart = Date.now();
     const message = await anthropic.messages.create({
       model: CLAUDE_MODEL,
       max_tokens: 8000,
@@ -327,8 +332,19 @@ export async function generateEmailHtml(
         },
       ],
     });
+    const apiCallDuration = Date.now() - apiCallStart;
+
+    console.log('[EMAIL-DEBUG] generateEmailHtml: Anthropic API responded', {
+      apiCallDuration: `${apiCallDuration}ms`,
+      stopReason: message.stop_reason,
+      inputTokens: message.usage?.input_tokens,
+      outputTokens: message.usage?.output_tokens,
+      contentBlocks: message.content.length,
+      contentType: message.content[0]?.type,
+    });
 
     const responseText = message.content[0].type === 'text' ? message.content[0].text : '';
+    console.log('[EMAIL-DEBUG] generateEmailHtml: raw response length', { length: responseText.length, startsWithDoctype: responseText.trim().toLowerCase().startsWith('<!doctype'), first100: responseText.substring(0, 100) });
 
     // Extract HTML from response (handle potential markdown code blocks)
     let fullHtml = responseText.trim();
@@ -336,6 +352,7 @@ export async function generateEmailHtml(
     // If wrapped in code blocks, extract
     const codeBlockMatch = fullHtml.match(/```html?\s*([\s\S]*?)\s*```/);
     if (codeBlockMatch) {
+      console.log('[EMAIL-DEBUG] generateEmailHtml: extracted HTML from code block');
       fullHtml = codeBlockMatch[1].trim();
     }
 
@@ -343,11 +360,16 @@ export async function generateEmailHtml(
     if (!fullHtml.toLowerCase().startsWith('<!doctype')) {
       const doctypeIndex = fullHtml.toLowerCase().indexOf('<!doctype');
       if (doctypeIndex > -1) {
+        console.log('[EMAIL-DEBUG] generateEmailHtml: trimmed content before DOCTYPE at index', doctypeIndex);
         fullHtml = fullHtml.substring(doctypeIndex);
+      } else {
+        console.warn('[EMAIL-DEBUG] generateEmailHtml: WARNING - no DOCTYPE found in response!', { first200: fullHtml.substring(0, 200) });
       }
     }
 
     const extractedContent = extractContentFromHtml(fullHtml);
+    console.log('[EMAIL-DEBUG] generateEmailHtml: extracted content', { subjectLine: extractedContent.subjectLine, headline: extractedContent.headline, ctaText: extractedContent.ctaText, bodyCopyLength: extractedContent.bodyCopy?.length });
+
     const tokensUsed = (message.usage?.input_tokens || 0) + (message.usage?.output_tokens || 0);
 
     return {
@@ -356,7 +378,7 @@ export async function generateEmailHtml(
       tokensUsed,
     };
   } catch (error: any) {
-    console.error('Email HTML generation error:', error);
+    console.error('[EMAIL-DEBUG] generateEmailHtml: ANTHROPIC API ERROR', { message: error.message, status: error.status, type: error.type, stack: error.stack });
     throw new Error(`Email HTML generation failed: ${error.message}`);
   }
 }

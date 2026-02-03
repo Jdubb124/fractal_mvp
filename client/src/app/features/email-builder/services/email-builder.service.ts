@@ -170,7 +170,10 @@ export class EmailBuilderService {
 
   // Generation
   async generateCampaign(): Promise<void> {
-    if (!this.isReadyToGenerate()) return;
+    if (!this.isReadyToGenerate()) {
+      console.warn('[EMAIL-DEBUG] BuilderService: generateCampaign called but not ready to generate');
+      return;
+    }
 
     this._isGenerating.set(true);
     this._generationProgress.set(0);
@@ -182,16 +185,30 @@ export class EmailBuilderService {
     const totalAssets = this.totalAssets();
     let generated = 0;
 
+    console.log('[EMAIL-DEBUG] BuilderService: generateCampaign starting (LOCAL generation, no API call)', {
+      campaignName: campaign.name,
+      objective: campaign.objective,
+      segments: campaign.segments,
+      emailTypes: campaign.emailTypes,
+      versionStrategies: campaign.versionStrategies,
+      totalAssets,
+      audienceCount: audiences.length,
+    });
+
     try {
       for (const segmentId of campaign.segments) {
         const audience = audiences.find(a => a._id === segmentId);
-        if (!audience) continue;
+        if (!audience) {
+          console.warn('[EMAIL-DEBUG] BuilderService: audience not found for segmentId', segmentId);
+          continue;
+        }
 
         for (const emailType of campaign.emailTypes) {
           for (const strategy of campaign.versionStrategies) {
             try {
               await this.delay(300 + Math.random() * 200);
               const content = this.generateLocalContent(audience, emailType, strategy, campaign);
+              console.log('[EMAIL-DEBUG] BuilderService: generated local content', { audience: audience.name, emailType, strategy, subjectLine: content.subjectLine });
 
               const asset: GeneratedEmailAsset = {
                 id: `asset_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -207,8 +224,9 @@ export class EmailBuilderService {
               this._generatedAssets.update(assets => [...assets, asset]);
               generated++;
               this._generationProgress.set(Math.round((generated / totalAssets) * 100));
+              console.log('[EMAIL-DEBUG] BuilderService: progress', { generated, totalAssets, progress: `${Math.round((generated / totalAssets) * 100)}%` });
             } catch (err) {
-              console.error(`Failed to generate ${emailType} for ${audience.name}:`, err);
+              console.error(`[EMAIL-DEBUG] BuilderService: FAILED to generate ${emailType} for ${audience.name}:`, err);
             }
           }
         }
@@ -217,7 +235,9 @@ export class EmailBuilderService {
       await this.delay(300);
       this._showPreview.set(true);
       this._selectedAssetIndex.set(0);
+      console.log('[EMAIL-DEBUG] BuilderService: generation complete', { totalGenerated: generated });
     } catch (err: any) {
+      console.error('[EMAIL-DEBUG] BuilderService: generation error', err);
       this._error.set(err.message || 'Generation failed');
     } finally {
       this._isGenerating.set(false);

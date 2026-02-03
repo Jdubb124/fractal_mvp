@@ -154,6 +154,8 @@ import { VERSION_STRATEGIES, VersionStrategy, EMAIL_TYPES, OBJECTIVES } from '..
     </div>
   `
 })
+
+// Begins Campaign Component Generation
 export class StepGenerateComponent {
   protected readonly builderService = inject(EmailBuilderService);
 

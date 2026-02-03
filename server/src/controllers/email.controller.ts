@@ -15,10 +15,13 @@ export const generateEmails = asyncHandler(async (req: Request, res: Response) =
     generationMode = 'ai-designed'
   } = req.body;
 
+  console.log('[EMAIL-DEBUG] Controller: generateEmails hit', { campaignId, templateId, regenerate, generationMode, userId: req.userId });
+
   if (!campaignId) {
     throw new AppError('Campaign ID is required', 400);
   }
 
+  console.log('[EMAIL-DEBUG] Controller: calling emailService.generateEmailAssets...');
   const result = await emailService.generateEmailAssets({
     campaignId,
     userId: req.userId!,
@@ -26,6 +29,8 @@ export const generateEmails = asyncHandler(async (req: Request, res: Response) =
     regenerate,
     generationMode,
   });
+
+  console.log('[EMAIL-DEBUG] Controller: generation complete', { totalGenerated: result.totalGenerated, generationTime: result.generationTime, assetIds: result.emailAssets?.map(a => (a as any)._id) });
 
   res.status(201).json({
     success: true,

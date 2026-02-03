@@ -53,33 +53,42 @@ class EmailService {
     const startTime = Date.now();
     const { campaignId, userId, templateId, regenerate, generationMode = EMAIL_GENERATION_MODES.AI_DESIGNED } = params;
 
+    console.log('[EMAIL-DEBUG] Service: generateEmailAssets called', { campaignId, userId, templateId, regenerate, generationMode });
+
     // Fetch campaign with populated data
     const campaign = await Campaign.findById(campaignId).populate('segments.audienceId');
     if (!campaign || campaign.userId.toString() !== userId) {
+      console.error('[EMAIL-DEBUG] Service: campaign not found or unauthorized', { campaignId, userId, campaignExists: !!campaign });
       throw new Error('Campaign not found or unauthorized');
     }
+    console.log('[EMAIL-DEBUG] Service: campaign loaded', { name: campaign.name, segments: campaign.segments?.length, channels: campaign.channels?.length, brandGuideId: campaign.brandGuideId });
 
     // Fetch brand guide
     const brandGuide = await BrandGuide.findById(campaign.brandGuideId);
     if (!brandGuide) {
+      console.error('[EMAIL-DEBUG] Service: brand guide not found', { brandGuideId: campaign.brandGuideId });
       throw new Error('Brand guide not found');
     }
+    console.log('[EMAIL-DEBUG] Service: brand guide loaded', { name: brandGuide.name, colors: brandGuide.colors, tone: brandGuide.tone });
 
     // If regenerating, delete existing email assets
     if (regenerate) {
-      await EmailAsset.deleteMany({ campaignId, userId });
+      const deleted = await EmailAsset.deleteMany({ campaignId, userId });
+      console.log('[EMAIL-DEBUG] Service: regenerate - deleted existing assets', { deletedCount: deleted.deletedCount });
     }
 
     // Branch based on generation mode
     if (generationMode === EMAIL_GENERATION_MODES.AI_DESIGNED) {
+      console.log('[EMAIL-DEBUG] Service: using AI_DESIGNED mode');
       try {
         return await this.generateWithAI(campaignId, userId, campaign, brandGuide, startTime);
       } catch (error: any) {
-        console.error('AI generation failed, falling back to template-based:', error.message);
+        console.error('[EMAIL-DEBUG] Service: AI generation failed, falling back to template-based:', error.message, error.stack);
         // Fallback to template-based generation
         return await this.generateWithTemplate(campaignId, userId, templateId, campaign, brandGuide, startTime);
       }
     } else {
+      console.log('[EMAIL-DEBUG] Service: using TEMPLATE_BASED mode');
       return await this.generateWithTemplate(campaignId, userId, templateId, campaign, brandGuide, startTime);
     }
   }
@@ -98,7 +107,10 @@ class EmailService {
     const segments = campaign.segments || [];
     const enabledChannels = (campaign.channels || []).filter((c: any) => c.enabled && c.type === 'email');
 
+    console.log('[EMAIL-DEBUG] generateWithAI: starting', { segmentCount: segments.length, enabledChannels: enabledChannels.length, allChannels: (campaign.channels || []).map((c: any) => ({ type: c.type, enabled: c.enabled })) });
+
     if (enabledChannels.length === 0) {
+      console.error('[EMAIL-DEBUG] generateWithAI: no email channel enabled', { channels: campaign.channels });
       throw new Error('No email channel enabled for this campaign');
     }
 
@@ -111,7 +123,11 @@ class EmailService {
         ? segment.audienceId
         : await Audience.findById(segment.audienceId);
 
-      if (!audience) continue;
+      if (!audience) {
+        console.warn('[EMAIL-DEBUG] generateWithAI: audience not found for segment', { segmentAudienceId: segment.audienceId });
+        continue;
+      }
+      console.log('[EMAIL-DEBUG] generateWithAI: processing audience', { name: audience.name, id: audience._id, propensityLevel: audience.propensityLevel });
 
       let versionNumber = 1;
       for (const strategy of strategies) {
@@ -154,20 +170,28 @@ class EmailService {
           },
         };
 
+        console.log('[EMAIL-DEBUG] generateWithAI: built context for Claude call', { audience: audience.name, strategy, emailType: 'promotional', campaignObjective: campaign.objective });
+
         try {
           // Generate HTML using Claude
+          console.log('[EMAIL-DEBUG] generateWithAI: calling emailHtmlGenerator.generateEmailHtml...');
           const result = await emailHtmlGenerator.generateEmailHtml(context);
+          console.log('[EMAIL-DEBUG] generateWithAI: Claude returned', { tokensUsed: result.tokensUsed, htmlLength: result.fullHtml?.length, extractedContent: { subjectLine: result.extractedContent?.subjectLine, headline: result.extractedContent?.headline, ctaText: result.extractedContent?.ctaText } });
 
           // Validate generated HTML
           const validation = emailHtmlValidator.validateEmailHtml(result.fullHtml);
           if (!validation.valid) {
-            console.warn('Generated HTML has issues:', validation.errors);
+            console.warn('[EMAIL-DEBUG] generateWithAI: HTML validation issues', validation.errors);
             // Attempt to sanitize
             result.fullHtml = emailHtmlValidator.sanitizeEmailHtml(result.fullHtml);
+            console.log('[EMAIL-DEBUG] generateWithAI: HTML sanitized, new length', result.fullHtml.length);
+          } else {
+            console.log('[EMAIL-DEBUG] generateWithAI: HTML validation passed');
           }
 
           // Inline CSS for email client compatibility
           const inlinedHtml = await cssInliner.inline(result.fullHtml);
+          console.log('[EMAIL-DEBUG] generateWithAI: CSS inlined', { inlinedHtmlLength: inlinedHtml.length });
 
           // Generate plain text version
           const plainText = htmlToPlainText(result.fullHtml);
@@ -207,18 +231,21 @@ class EmailService {
             },
           });
 
+          console.log('[EMAIL-DEBUG] generateWithAI: asset saved to DB', { assetId: emailAsset._id, audience: audience.name, strategy });
           emailAssets.push(emailAsset);
         } catch (error: any) {
-          console.error(`AI generation failed for ${audience.name} - ${strategy}:`, error.message);
+          console.error(`[EMAIL-DEBUG] generateWithAI: FAILED for ${audience.name} - ${strategy}:`, error.message, error.stack);
           // Continue with other generations
         }
       }
     }
 
     if (emailAssets.length === 0) {
+      console.error('[EMAIL-DEBUG] generateWithAI: all generations failed, 0 assets produced');
       throw new Error('AI generation failed for all segments. Try template-based generation.');
     }
 
+    console.log('[EMAIL-DEBUG] generateWithAI: complete', { totalGenerated: emailAssets.length, generationTime: Date.now() - startTime });
     return {
       emailAssets,
       totalGenerated: emailAssets.length,
