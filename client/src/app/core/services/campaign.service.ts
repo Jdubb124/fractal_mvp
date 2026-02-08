@@ -59,6 +59,7 @@ export interface CampaignDetailResponse {
   data: {
     campaign: Campaign;
     assets: Asset[];
+    emailAssets?: any[];
     stats?: any;
   };
 }
