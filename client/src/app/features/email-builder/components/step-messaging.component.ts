@@ -135,7 +135,7 @@ import { TONE_OPTIONS, CHAR_LIMITS } from '../models/email-builder.types';
             </div>
             <div>
               <span class="text-text-muted">Brand:</span>
-              <span class="text-text-secondary ml-2">{{ brandGuide()?.name || 'Not set' }}</span>
+              <span class="text-text-secondary ml-2">{{ brandGuide().name || 'Not set' }}</span>
             </div>
           </div>
         </div>

@@ -228,13 +228,13 @@ import {
         <div class="flex items-center gap-2">
           <span
             class="px-2 py-1 rounded text-xs font-medium"
-            [ngClass]="getStatusClasses(currentVersion()?.status)"
+            [ngClass]="getStatusClasses(currentVersion().status)"
           >
-            {{ currentVersion()?.status }}
+            {{ currentVersion().status }}
           </span>
-          @if (currentVersion()?.generatedAt) {
+          @if (currentVersion().generatedAt) {
             <span class="text-xs text-text-muted">
-              Generated {{ formatDate(currentVersion()?.generatedAt) }}
+              Generated {{ formatDate(currentVersion().generatedAt) }}
             </span>
           }
         </div>
@@ -256,10 +256,10 @@ import {
           </button>
           <button
             (click)="onApprove()"
-            [disabled]="currentVersion()?.status === 'approved'"
+            [disabled]="currentVersion().status === 'approved'"
             class="px-3 py-1.5 rounded bg-success text-white text-sm font-medium hover:bg-success/90 transition-colors disabled:opacity-50"
           >
-            {{ currentVersion()?.status === 'approved' ? '✓ Approved' : '✅ Approve' }}
+            {{ currentVersion().status === 'approved' ? '✓ Approved' : '✅ Approve' }}
           </button>
         </div>
       </div>

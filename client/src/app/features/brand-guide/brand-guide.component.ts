@@ -47,7 +47,7 @@ import { DEFAULT_COLORS, CHAR_LIMITS } from './models/brand-guide.types';
                   <h3 class="font-semibold text-text-primary truncate flex-1">
                     {{ guide.name }}
                   </h3>
-                  @if (brandService.selectedBrandGuide()?._id === guide._id) {
+                  @if (brandService.selectedBrandGuide()._id === guide._id) {
                     <span class="text-xs bg-success/20 text-success px-2 py-0.5 rounded ml-2">
                       Active
                     </span>

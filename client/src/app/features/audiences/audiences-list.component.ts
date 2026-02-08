@@ -81,14 +81,14 @@ const CHAR_LIMITS = {
                   @if (audience.demographics.ageRange) {
                     {{ audience.demographics.ageRange.min }}-{{ audience.demographics.ageRange.max }} yrs
                   }
-                  @if (audience.demographics.location?.length) {
+                  @if (audience.demographics.location.length) {
                     · {{ audience.demographics.location.slice(0, 2).join(', ') }}
                   }
                 </p>
               }
 
               <!-- Pain Points Preview -->
-              @if (audience.painPoints?.length) {
+              @if (audience.painPoints.length) {
                 <div class="flex flex-wrap gap-1">
                   @for (point of audience.painPoints.slice(0, 2); track $index) {
                     <span class="text-xs bg-segment/10 text-segment px-2 py-0.5 rounded">

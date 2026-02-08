@@ -256,12 +256,7 @@ export class CampaignDetailComponent implements OnInit {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.loadCampaign(id);
-<<<<<<< HEAD
-      this.loadEmailAssets(id);
       this.loadAudiences();
-      this.loadAudiences();
-=======
->>>>>>> claude/asset-selection-preview-Zx8Bd
     }
   }
 
@@ -281,7 +276,6 @@ export class CampaignDetailComponent implements OnInit {
             this.activeTab.set('emails');
           }
         }
-        this.audienceMap.set(map);
       },
     });
   }
