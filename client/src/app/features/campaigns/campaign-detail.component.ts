@@ -337,6 +337,11 @@ export class CampaignDetailComponent implements OnInit {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.loadCampaign(id);
+<<<<<<< HEAD
+      this.loadEmailAssets(id);
+      this.loadAudiences();
+=======
+>>>>>>> claude/asset-selection-preview-Zx8Bd
     }
   }
 
