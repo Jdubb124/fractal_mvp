@@ -17,8 +17,6 @@ export interface EmailHtmlGenerationContext {
     keyMessages: string[];
     callToAction?: string;
     urgencyLevel: UrgencyLevel;
-    startDate?: Date;
-    endDate?: Date;
   };
   audience: {
     name: string;
@@ -78,20 +76,13 @@ function buildBrandContext(brandGuide: EmailHtmlGenerationContext['brandGuide'])
 
 // Build the campaign context section
 function buildCampaignContext(campaign: EmailHtmlGenerationContext['campaign']): string {
-  let dateContext = '';
-  if (campaign.startDate || campaign.endDate) {
-    const start = campaign.startDate ? new Date(campaign.startDate).toLocaleDateString() : 'Not set';
-    const end = campaign.endDate ? new Date(campaign.endDate).toLocaleDateString() : 'Not set';
-    dateContext = `\n- Campaign Period: ${start} to ${end}`;
-  }
-
   return `## CAMPAIGN CONTEXT
 - Campaign Name: ${campaign.name}
 - Objective: ${campaign.objective || 'Drive engagement and conversions'}
 - Description: ${campaign.description || 'Not specified'}
 - Key Messages: ${campaign.keyMessages.length > 0 ? '\n  - ' + campaign.keyMessages.join('\n  - ') : 'Not specified'}
 - Primary CTA: ${campaign.callToAction || 'Learn More'}
-- Urgency Level: ${campaign.urgencyLevel.toUpperCase()}${dateContext}`;
+- Urgency Level: ${campaign.urgencyLevel.toUpperCase()}`;
 }
 
 // Build the audience context section

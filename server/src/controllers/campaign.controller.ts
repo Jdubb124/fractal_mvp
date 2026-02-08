@@ -154,8 +154,6 @@ export const updateCampaign = asyncHandler(async (req: Request, res: Response) =
     'keyMessages',
     'callToAction',
     'urgencyLevel',
-    'startDate',
-    'endDate',
   ];
 
   allowedUpdates.forEach(field => {
@@ -316,8 +314,6 @@ export const exportCampaign = asyncHandler(async (req: Request, res: Response) =
       keyMessages: campaign.keyMessages,
       callToAction: campaign.callToAction,
       urgencyLevel: campaign.urgencyLevel,
-      startDate: campaign.startDate,
-      endDate: campaign.endDate,
     },
     segments: campaign.segments.map((seg: any) => ({
       audienceName: seg.audienceId?.name,

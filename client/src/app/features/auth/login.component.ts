@@ -9,23 +9,23 @@ import { AuthService } from '../../core/services/auth.service';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
   template: `
-    <div class="min-h-screen bg-gray-950 flex items-center justify-center px-4">
+    <div class="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div class="max-w-md w-full">
         <!-- Logo -->
         <div class="text-center mb-8">
           <h1 class="text-4xl font-bold bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
             Fractal
           </h1>
-          <p class="text-gray-400 mt-2">AI-Powered Campaign Orchestration</p>
+          <p class="text-gray-500 mt-2">AI-Powered Campaign Orchestration</p>
         </div>
 
         <!-- Login Card -->
-        <div class="bg-gray-900 rounded-2xl border border-gray-800 p-8">
-          <h2 class="text-2xl font-semibold text-white mb-6">Welcome back</h2>
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-lg p-8">
+          <h2 class="text-2xl font-semibold text-gray-900 mb-6">Welcome back</h2>
 
           @if (errorMessage()) {
             <div class="bg-red-500/10 border border-red-500/50 rounded-lg p-4 mb-6">
-              <p class="text-red-400 text-sm">{{ errorMessage() }}</p>
+              <p class="text-red-600 text-sm">{{ errorMessage() }}</p>
             </div>
           }
 
@@ -33,32 +33,32 @@ import { AuthService } from '../../core/services/auth.service';
             <div class="space-y-5">
               <!-- Email -->
               <div>
-                <label class="block text-sm font-medium text-gray-300 mb-2">Email</label>
+                <label class="block text-sm font-medium text-gray-600 mb-2">Email</label>
                 <input
                   type="email"
                   formControlName="email"
-                  class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-colors"
+                  class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-colors"
                   placeholder="you@company.com"
                 />
                 @if (loginForm.get('email')?.touched && loginForm.get('email')?.errors?.['required']) {
-                  <p class="text-red-400 text-sm mt-1">Email is required</p>
+                  <p class="text-red-600 text-sm mt-1">Email is required</p>
                 }
                 @if (loginForm.get('email')?.touched && loginForm.get('email')?.errors?.['email']) {
-                  <p class="text-red-400 text-sm mt-1">Please enter a valid email</p>
+                  <p class="text-red-600 text-sm mt-1">Please enter a valid email</p>
                 }
               </div>
 
               <!-- Password -->
               <div>
-                <label class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                <label class="block text-sm font-medium text-gray-600 mb-2">Password</label>
                 <input
                   type="password"
                   formControlName="password"
-                  class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-colors"
+                  class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-colors"
                   placeholder="••••••••"
                 />
                 @if (loginForm.get('password')?.touched && loginForm.get('password')?.errors?.['required']) {
-                  <p class="text-red-400 text-sm mt-1">Password is required</p>
+                  <p class="text-red-600 text-sm mt-1">Password is required</p>
                 }
               </div>
 
@@ -84,9 +84,9 @@ import { AuthService } from '../../core/services/auth.service';
           </form>
 
           <!-- Register Link -->
-          <p class="text-center text-gray-400 mt-6">
+          <p class="text-center text-gray-500 mt-6">
             Don't have an account?
-            <a routerLink="/register" class="text-violet-400 hover:text-violet-300 font-medium ml-1">
+            <a routerLink="/register" class="text-violet-600 hover:text-violet-500 font-medium ml-1">
               Create one
             </a>
           </p>

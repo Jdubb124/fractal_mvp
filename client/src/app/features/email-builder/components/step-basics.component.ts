@@ -65,28 +65,6 @@ import { OBJECTIVES, CHAR_LIMITS, UrgencyLevel } from '../models/email-builder.t
           </div>
         </div>
 
-        <!-- Date Range -->
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="form-label">Start Date</label>
-            <input
-              type="date"
-              [ngModel]="campaign().startDate"
-              (ngModelChange)="updateField('startDate', $event)"
-              class="form-input"
-            />
-          </div>
-          <div>
-            <label class="form-label">End Date</label>
-            <input
-              type="date"
-              [ngModel]="campaign().endDate"
-              (ngModelChange)="updateField('endDate', $event)"
-              class="form-input"
-            />
-          </div>
-        </div>
-
         <!-- Urgency Level -->
         <div>
           <label class="form-label">Campaign Urgency</label>

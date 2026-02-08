@@ -6,20 +6,22 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Background colors
-        'bg-dark': '#0a0a0a',
-        'bg-panel': '#111111',
-        'bg-card': '#1a1a1a',
-        'bg-hover': '#252525',
-        'bg-input': '#1e1e1e',
+        // Background colors (light mode)
+        'bg-dark': '#ffffff',
+        'bg-panel': '#f8fafc',
+        'bg-card': '#f1f5f9',
+        'bg-hover': '#e2e8f0',
+        'bg-input': '#ffffff',
+        'bg-primary': '#ffffff',
+        'bg-secondary': '#f8fafc',
 
-        // Text colors
-        'text-primary': '#ffffff',
-        'text-secondary': '#a1a1aa',
-        'text-muted': '#52525b',
+        // Text colors (dark on light)
+        'text-primary': '#0f172a',
+        'text-secondary': '#475569',
+        'text-muted': '#94a3b8',
 
         // Border colors
-        'border-color': '#27272a',
+        'border-color': '#e2e8f0',
 
         // Accent colors
         'accent-primary': '#8b5cf6',
@@ -42,7 +44,7 @@ module.exports = {
         mono: ['Space Mono', 'monospace'],
       },
       boxShadow: {
-        'glow': '0 0 20px rgba(139, 92, 246, 0.3)',
+        'glow': '0 0 20px rgba(139, 92, 246, 0.15)',
       },
     },
   },

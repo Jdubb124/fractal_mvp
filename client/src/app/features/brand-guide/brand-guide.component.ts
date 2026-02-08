@@ -58,7 +58,7 @@ import { DEFAULT_COLORS, CHAR_LIMITS } from './models/brand-guide.types';
                 <div class="flex gap-1.5 mb-3">
                   @for (color of guide.colors.slice(0, 6); track $index) {
                     <div
-                      class="w-6 h-6 rounded-md border border-white/20"
+                      class="w-6 h-6 rounded-md border border-gray-300"
                       [style.backgroundColor]="color"
                     ></div>
                   }

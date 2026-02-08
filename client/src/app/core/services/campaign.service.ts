@@ -25,8 +25,6 @@ export interface Campaign {
   keyMessages: string[];
   callToAction?: string;
   urgencyLevel?: 'low' | 'medium' | 'high';
-  startDate?: Date;
-  endDate?: Date;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -153,5 +151,26 @@ export class CampaignService {
       .pipe(
         tap(() => this.generatingSignal.set(false))
       );
+  }
+
+  regenerateVersion(
+    assetId: string,
+    versionId: string,
+    customInstructions?: string
+  ): Observable<{ success: boolean; data: { asset: Asset } }> {
+    return this.http.post<{ success: boolean; data: { asset: Asset } }>(
+      `${environment.apiUrl}/assets/${assetId}/versions/${versionId}/regenerate`,
+      { customInstructions }
+    );
+  }
+
+  approveVersion(
+    assetId: string,
+    versionId: string
+  ): Observable<{ success: boolean; data: { asset: Asset } }> {
+    return this.http.patch<{ success: boolean; data: { asset: Asset } }>(
+      `${environment.apiUrl}/assets/${assetId}/versions/${versionId}/approve`,
+      {}
+    );
   }
 }

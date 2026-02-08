@@ -30,7 +30,7 @@ import { CommonModule } from '@angular/common';
             [style.width.%]="progress"
           ></div>
           <!-- Shimmer Effect -->
-          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer"></div>
+          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-black/5 to-transparent animate-shimmer"></div>
         </div>
 
         <!-- Progress Percentage -->

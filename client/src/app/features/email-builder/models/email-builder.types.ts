@@ -127,8 +127,6 @@ export interface EmailCampaignConfig {
   name: string;
   objective: string;
   description: string;
-  startDate: string;
-  endDate: string;
   urgencyLevel: UrgencyLevel;
   segments: string[];
   emailTypes: EmailType[];
@@ -199,8 +197,6 @@ export function createDefaultEmailCampaign(): EmailCampaignConfig {
     name: '',
     objective: '',
     description: '',
-    startDate: '',
-    endDate: '',
     urgencyLevel: 'medium',
     segments: [],
     emailTypes: ['promotional'],

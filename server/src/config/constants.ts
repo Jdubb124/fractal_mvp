@@ -65,6 +65,20 @@ export const AUTH = {
     EMOTIONAL: 'emotional',
   } as const;
 
+  // Generation tracking
+  export const GENERATION_STATUS = {
+    PENDING: 'pending',
+    IN_PROGRESS: 'in_progress',
+    COMPLETED: 'completed',
+    FAILED: 'failed',
+  } as const;
+
+  export const API_CALL_TYPES = {
+    EMAIL_GENERATION: 'email_generation',
+    META_AD_GENERATION: 'meta_ad_generation',
+    REGENERATION: 'regeneration',
+  } as const;
+
   // Email Types (for email-specific generation)
   export const EMAIL_TYPES = {
     PROMOTIONAL: 'promotional',
@@ -118,3 +132,5 @@ export const AUTH = {
   export type EmailTemplate = typeof EMAIL_TEMPLATES[keyof typeof EMAIL_TEMPLATES];
   export type ExportFormat = typeof EXPORT_FORMATS[keyof typeof EXPORT_FORMATS];
   export type EmailGenerationMode = typeof EMAIL_GENERATION_MODES[keyof typeof EMAIL_GENERATION_MODES];
+  export type GenerationStatus = typeof GENERATION_STATUS[keyof typeof GENERATION_STATUS];
+  export type ApiCallType = typeof API_CALL_TYPES[keyof typeof API_CALL_TYPES];

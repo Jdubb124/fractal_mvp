@@ -140,8 +140,6 @@ class EmailService {
             keyMessages: campaign.keyMessages || [],
             callToAction: campaign.callToAction,
             urgencyLevel: campaign.urgencyLevel || 'medium',
-            startDate: campaign.startDate,
-            endDate: campaign.endDate,
           },
           audience: {
             name: audience.name,

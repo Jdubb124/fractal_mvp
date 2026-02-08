@@ -289,6 +289,86 @@ export async function regenerateAsset(
   return asset;
 }
 
+// Regenerate a specific version in-place
+export async function regenerateAssetVersion(
+  assetId: string,
+  versionId: string,
+  userId: string,
+  customInstructions?: string
+): Promise<any> {
+  const mongoose = require('mongoose');
+  const Campaign = require('../models/Campaign').default;
+
+  // Load asset with populated references
+  const asset = await Asset.findById(assetId)
+    .populate('campaignId')
+    .populate('audienceId');
+
+  if (!asset) {
+    throw new Error('Asset not found');
+  }
+
+  // Verify ownership through campaign
+  const campaign = asset.campaignId as any;
+  if (campaign.userId.toString() !== userId) {
+    throw new Error('Access denied');
+  }
+
+  // Find the version to regenerate
+  const versionIndex = asset.versions.findIndex(
+    (v: any) => v._id?.toString() === versionId
+  );
+
+  if (versionIndex === -1) {
+    throw new Error('Version not found');
+  }
+
+  const version = asset.versions[versionIndex];
+  const audience = asset.audienceId as any;
+
+  // Get brand guide
+  const BrandGuide = require('../models/BrandGuide').default;
+  const brandGuide = await BrandGuide.findById(campaign.brandGuideId);
+
+  if (!brandGuide) {
+    throw new Error('Brand guide not found');
+  }
+
+  // Build the appropriate prompt
+  const strategy = version.strategy || 'conversion';
+  let prompt: string;
+
+  if (asset.channelType === CHANNEL_TYPES.EMAIL) {
+    prompt = buildEmailPrompt(brandGuide, campaign, audience, strategy);
+  } else {
+    prompt = buildMetaAdPrompt(brandGuide, campaign, audience, strategy);
+  }
+
+  // Add custom instructions if provided
+  if (customInstructions) {
+    prompt += `\n\nADDITIONAL INSTRUCTIONS:\n${customInstructions}`;
+  }
+
+  // Call Claude API
+  const content = await generateContent(prompt);
+
+  // Update the version in-place
+  const existingVersion = asset.versions[versionIndex] as any;
+  asset.versions[versionIndex] = {
+    _id: existingVersion._id,
+    versionName: existingVersion.versionName,
+    strategy: existingVersion.strategy,
+    content: content,
+    status: ASSET_STATUS.GENERATED,
+    generatedAt: new Date(),
+  };
+
+  asset.generationPrompt = prompt;
+  await asset.save();
+
+  return asset;
+}
+
 // Generate single content piece (utility function)
 export async function generateSingleContent(
   brandGuide: IBrandGuide,

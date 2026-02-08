@@ -54,10 +54,6 @@ export interface ICampaign extends Document {
   callToAction?: string;
   urgencyLevel: UrgencyLevel;
 
-  // Dates
-  startDate?: Date;
-  endDate?: Date;
-
   createdAt: Date;
   updatedAt: Date;
 
@@ -172,9 +168,6 @@ const campaignSchema = new Schema<ICampaign>(
       default: URGENCY_LEVELS.MEDIUM,
     },
     
-    // Dates
-    startDate: Date,
-    endDate: Date,
   },
   {
     timestamps: true,
@@ -206,14 +199,6 @@ campaignSchema.virtual('contextSummary').get(function () {
     segmentCount: segments.length,
     channels: channels.filter(c => c.enabled).map(c => c.type),
   };
-});
-
-// Pre-save validation: ensure start date is before end date
-campaignSchema.pre('save', function(next) {
-  if (this.startDate && this.endDate && this.startDate > this.endDate) {
-    next(new Error('Start date must be before end date'));
-  }
-  next();
 });
 
 // Enable virtuals

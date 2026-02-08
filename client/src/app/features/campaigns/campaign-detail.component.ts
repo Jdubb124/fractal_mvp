@@ -8,11 +8,14 @@ import { CampaignService, Campaign, Asset, CampaignDetailResponse } from '../../
 import { EmailViewerComponent } from '../email-exporter/components/email-viewer.component';
 import { EmailExporterService } from '../email-exporter/services/email.service';
 import { EmailAsset, EmailTemplate, ExportFormat, TEMPLATE_LABELS } from '../email-exporter/models/email.types';
+import { AssetGalleryComponent } from './components/asset-gallery';
+import { AudienceService } from '../../core/services/audience.service';
+import { RegenerateVersionEvent, ApproveVersionEvent } from './models/asset-gallery.types';
 
 @Component({
   selector: 'app-campaign-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, LayoutComponent, LoadingComponent, EmailViewerComponent],
+  imports: [CommonModule, RouterModule, FormsModule, LayoutComponent, LoadingComponent, EmailViewerComponent, AssetGalleryComponent],
   template: `
     <app-layout>
       <div class="p-8 max-w-7xl mx-auto">
@@ -102,10 +105,8 @@ import { EmailAsset, EmailTemplate, ExportFormat, TEMPLATE_LABELS } from '../ema
 
           <!-- Content Assets Tab -->
           @if (activeTab() === 'assets') {
-            <div class="card">
-              <h2 class="text-lg font-semibold mb-4">Generated Assets</h2>
-
-              @if (assets().length === 0) {
+            @if (assets().length === 0) {
+              <div class="card">
                 <div class="text-center py-12">
                   <div class="w-16 h-16 bg-bg-card rounded-full flex items-center justify-center mx-auto mb-4">
                     <span class="text-2xl">🤖</span>
@@ -115,103 +116,17 @@ import { EmailAsset, EmailTemplate, ExportFormat, TEMPLATE_LABELS } from '../ema
                     Click "Generate Content" to create AI-powered content for all your segments and channels.
                   </p>
                 </div>
-              } @else {
-                <div class="space-y-6">
-                  @for (asset of assets(); track asset._id) {
-                    <div class="bg-bg-card rounded-lg p-6">
-                      <!-- Asset Header -->
-                      <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center gap-3">
-                          <div class="w-10 h-10 rounded-lg flex items-center justify-center"
-                               [class]="asset.channelType === 'email' ? 'bg-channel/15' : 'bg-asset/15'">
-                            <span>{{ asset.channelType === 'email' ? '📧' : '📱' }}</span>
-                          </div>
-                          <div>
-                            <h3 class="font-medium text-text-primary">{{ asset.name }}</h3>
-                            <div class="text-sm text-text-muted">
-                              {{ asset.channelType === 'email' ? 'Email' : 'Meta Ad' }} · {{ asset.versions.length }} versions
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- Versions -->
-                      <div class="space-y-4">
-                        @for (version of asset.versions; track version._id) {
-                          <div class="bg-bg-panel rounded-lg p-4 border border-border-color">
-                            <div class="flex items-center justify-between mb-3">
-                              <div class="flex items-center gap-2">
-                                <span class="level-badge level-version">{{ version.versionName }}</span>
-                                <span class="px-2 py-0.5 rounded text-xs" [class]="getVersionStatusClass(version.status)">
-                                  {{ version.status }}
-                                </span>
-                              </div>
-                              <button (click)="approveVersion(asset, version)"
-                                      [disabled]="version.status === 'approved'"
-                                      class="text-xs text-accent-primary hover:underline disabled:opacity-50">
-                                {{ version.status === 'approved' ? '✓ Approved' : 'Approve' }}
-                              </button>
-                            </div>
-
-                            <!-- Email Content -->
-                            @if (asset.channelType === 'email') {
-                              <div class="space-y-3 text-sm">
-                                <div>
-                                  <span class="text-text-muted">Subject: </span>
-                                  <span class="text-text-primary">{{ version.content.subjectLine }}</span>
-                                </div>
-                                <div>
-                                  <span class="text-text-muted">Preheader: </span>
-                                  <span class="text-text-secondary">{{ version.content.preheader }}</span>
-                                </div>
-                                <div>
-                                  <span class="text-text-muted">Headline: </span>
-                                  <span class="text-text-primary font-medium">{{ version.content.headline }}</span>
-                                </div>
-                                <div>
-                                  <span class="text-text-muted">Body: </span>
-                                  <p class="text-text-secondary mt-1">{{ version.content.bodyCopy }}</p>
-                                </div>
-                                <div>
-                                  <span class="text-text-muted">CTA: </span>
-                                  <span class="px-3 py-1 bg-accent-primary/20 text-accent-primary rounded text-xs">
-                                    {{ version.content.ctaText }}
-                                  </span>
-                                </div>
-                              </div>
-                            }
-
-                            <!-- Meta Ad Content -->
-                            @if (asset.channelType === 'meta_ads') {
-                              <div class="space-y-3 text-sm">
-                                <div>
-                                  <span class="text-text-muted">Primary Text: </span>
-                                  <p class="text-text-primary">{{ version.content.primaryText }}</p>
-                                </div>
-                                <div>
-                                  <span class="text-text-muted">Headline: </span>
-                                  <span class="text-text-primary font-medium">{{ version.content.headline }}</span>
-                                </div>
-                                <div>
-                                  <span class="text-text-muted">Description: </span>
-                                  <span class="text-text-secondary">{{ version.content.description }}</span>
-                                </div>
-                                <div>
-                                  <span class="text-text-muted">CTA Button: </span>
-                                  <span class="px-3 py-1 bg-accent-primary text-white rounded text-xs">
-                                    {{ version.content.ctaButton }}
-                                  </span>
-                                </div>
-                              </div>
-                            }
-                          </div>
-                        }
-                      </div>
-                    </div>
-                  }
-                </div>
-              }
-            </div>
+              </div>
+            } @else {
+              <app-asset-gallery
+                [assets]="assets()"
+                [audienceMap]="audienceMap()"
+                [brandName]="brandName()"
+                [primaryColor]="primaryColor()"
+                (regenerateVersion)="handleRegenerate($event)"
+                (approveVersion)="handleApprove($event)"
+              ></app-asset-gallery>
+            }
           }
 
           <!-- Email HTML Tab -->
@@ -342,6 +257,7 @@ import { EmailAsset, EmailTemplate, ExportFormat, TEMPLATE_LABELS } from '../ema
 })
 export class CampaignDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
+  private audienceService = inject(AudienceService);
   campaignService = inject(CampaignService);
   emailService = inject(EmailExporterService);
 
@@ -350,6 +266,9 @@ export class CampaignDetailComponent implements OnInit {
   emailAssets = signal<EmailAsset[]>([]);
   selectedEmailAsset = signal<EmailAsset | null>(null);
   activeTab = signal<'assets' | 'emails'>('assets');
+  audienceMap = signal<Map<string, string>>(new Map());
+  brandName = signal<string>('Your Brand');
+  primaryColor = signal<string>('#8b5cf6');
 
   // Email generation options
   selectedTemplate: EmailTemplate = 'minimal';
@@ -363,6 +282,7 @@ export class CampaignDetailComponent implements OnInit {
     if (id) {
       this.loadCampaign(id);
       this.loadEmailAssets(id);
+      this.loadAudiences();
     }
   }
 
@@ -383,6 +303,19 @@ export class CampaignDetailComponent implements OnInit {
         if (assets.length > 0 && !this.selectedEmailAsset()) {
           this.selectedEmailAsset.set(assets[0]);
         }
+      },
+    });
+  }
+
+  loadAudiences(): void {
+    this.audienceService.getAudiences().subscribe({
+      next: (response: any) => {
+        const audiences = response.data?.audiences || response.audiences || response;
+        const map = new Map<string, string>();
+        if (Array.isArray(audiences)) {
+          audiences.forEach((a: any) => map.set(a._id, a.name));
+        }
+        this.audienceMap.set(map);
       },
     });
   }
@@ -467,9 +400,16 @@ export class CampaignDetailComponent implements OnInit {
     this.emailService.bulkExportEmails(assetIds, 'html', 'by_audience');
   }
 
-  approveVersion(asset: Asset, version: any): void {
-    console.log('Approve version:', asset._id, version._id);
-    // TODO: Call asset service to approve
+  handleRegenerate(event: RegenerateVersionEvent): void {
+    // Regeneration is handled inside AssetGalleryComponent
+    // This handler is for any additional parent-level logic
+    console.log('Regenerate requested:', event);
+  }
+
+  handleApprove(event: ApproveVersionEvent): void {
+    // Approval is handled inside AssetGalleryComponent
+    // This handler is for any additional parent-level logic
+    console.log('Approve requested:', event);
   }
 
   exportCampaign(): void {

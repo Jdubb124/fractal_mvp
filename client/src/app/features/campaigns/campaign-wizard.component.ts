@@ -73,16 +73,6 @@ import { BrandService } from '../../core/services/brand.service';
                   <textarea formControlName="objective" class="form-input" rows="3" placeholder="What do you want to achieve with this campaign?"></textarea>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
-                  <div>
-                    <label class="form-label">Start Date</label>
-                    <input type="date" formControlName="startDate" class="form-input" />
-                  </div>
-                  <div>
-                    <label class="form-label">End Date</label>
-                    <input type="date" formControlName="endDate" class="form-input" />
-                  </div>
-                </div>
               </div>
             }
 
@@ -279,8 +269,6 @@ export class CampaignWizardComponent implements OnInit {
     name: ['', [Validators.required]],
     objective: [''],
     description: [''],
-    startDate: [''],
-    endDate: [''],
     segments: [[]],
     channels: this.fb.array([
       this.fb.group({ type: ['email'], enabled: [true], purpose: [''] }),

@@ -5,6 +5,7 @@ import {
   updateVersion,
   approveVersion,
   regenerate,
+  regenerateVersion,
   deleteAsset,
   getAssetsByCampaign,
 } from '../controllers/asset.controller';
@@ -31,5 +32,8 @@ router.patch('/:id/versions/:versionId/approve', approveVersion);
 
 // Regenerate asset
 router.post('/:id/regenerate', regenerate);
+
+// Regenerate specific version
+router.post('/:assetId/versions/:versionId/regenerate', regenerateVersion);
 
 export default router;

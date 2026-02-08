@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { Asset, Campaign } from '../models';
 import { AppError, asyncHandler } from '../middleware/errorHandler';
 import { ASSET_STATUS } from '../config/constants';
-import { regenerateAsset } from '../services/generation.service';
+import { regenerateAsset, regenerateAssetVersion } from '../services/generation.service';
 
 // @desc    Get single asset
 // @route   GET /api/assets/:id
@@ -230,6 +230,31 @@ export const deleteAsset = asyncHandler(async (req: Request, res: Response) => {
     success: true,
     message: 'Asset deleted successfully',
   });
+});
+
+// @desc    Regenerate a specific version
+// @route   POST /api/assets/:assetId/versions/:versionId/regenerate
+// @access  Private
+export const regenerateVersion = asyncHandler(async (req: Request, res: Response) => {
+  const { assetId, versionId } = req.params;
+  const { customInstructions } = req.body;
+
+  try {
+    const updatedAsset = await regenerateAssetVersion(
+      assetId,
+      versionId,
+      req.userId as string,
+      customInstructions
+    );
+
+    res.json({
+      success: true,
+      message: 'Version regenerated successfully',
+      data: { asset: updatedAsset },
+    });
+  } catch (error: any) {
+    throw new AppError(`Regeneration failed: ${error.message}`, 500);
+  }
 });
 
 // @desc    Get assets by campaign
