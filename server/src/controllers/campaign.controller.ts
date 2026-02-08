@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
-import { Campaign, BrandGuide, Audience, Asset } from '../models';
+import { Campaign, BrandGuide, Audience, Asset, EmailAsset } from '../models';
 import { AppError, asyncHandler } from '../middleware/errorHandler';
-import { LIMITS, CAMPAIGN_STATUS } from '../config/constants';
+import { LIMITS, CAMPAIGN_STATUS, CHANNEL_TYPES } from '../config/constants';
 import { generateCampaignAssets } from '../services/generation.service';
+import { emailService } from '../services/email.service';
 
 // @desc    Get all campaigns for user
 // @route   GET /api/campaigns
@@ -51,8 +52,9 @@ export const getCampaign = asyncHandler(async (req: Request, res: Response) => {
     throw new AppError('Campaign not found', 404);
   }
 
-  // Get associated assets
+  // Get associated assets (both legacy Asset docs and EmailAsset docs)
   const assets = await Asset.find({ campaignId: campaign._id });
+  const emailAssets = await EmailAsset.find({ campaignId: campaign._id, userId: req.userId });
 
   const segments = campaign.segments || [];
   const channels = campaign.channels || [];
@@ -62,10 +64,12 @@ export const getCampaign = asyncHandler(async (req: Request, res: Response) => {
     data: {
       campaign,
       assets,
+      emailAssets,
       stats: {
         segmentCount: segments.length,
         channelCount: channels.filter(c => c.enabled).length,
         assetCount: assets.length,
+        emailAssetCount: emailAssets.length,
         expectedAssetCount: segments.length * channels.filter(c => c.enabled).length,
       }
     },
@@ -184,8 +188,9 @@ export const deleteCampaign = asyncHandler(async (req: Request, res: Response) =
     throw new AppError('Campaign not found', 404);
   }
 
-  // Delete associated assets
+  // Delete associated assets (both types)
   await Asset.deleteMany({ campaignId: campaign._id });
+  await EmailAsset.deleteMany({ campaignId: campaign._id });
 
   // Delete campaign
   await campaign.deleteOne();
@@ -200,9 +205,9 @@ export const deleteCampaign = asyncHandler(async (req: Request, res: Response) =
 // @route   POST /api/campaigns/:id/generate
 // @access  Private
 export const generateAssets = asyncHandler(async (req: Request, res: Response) => {
-  const campaign = await Campaign.findOne({ 
-    _id: req.params.id, 
-    userId: req.userId 
+  const campaign = await Campaign.findOne({
+    _id: req.params.id,
+    userId: req.userId
   }).populate('segments.audienceId');
 
   if (!campaign) {
@@ -226,20 +231,43 @@ export const generateAssets = asyncHandler(async (req: Request, res: Response) =
   }
 
   try {
-    // Generate assets using AI service
-    const assets = await generateCampaignAssets(campaign, brandGuide);
+    const hasEmailChannel = enabledChannels.some(c => c.type === CHANNEL_TYPES.EMAIL);
+    const hasMetaChannel = enabledChannels.some(c => c.type === CHANNEL_TYPES.META_ADS);
+
+    let assets: any[] = [];
+    let emailAssets: any[] = [];
+
+    // Generate EmailAsset docs (with full HTML) for email channels
+    if (hasEmailChannel) {
+      const hasExisting = await EmailAsset.countDocuments({ campaignId: campaign._id, userId: req.userId });
+      const emailResult = await emailService.generateEmailAssets({
+        campaignId: campaign._id.toString(),
+        userId: req.userId!,
+        templateId: 'ai-generated',
+        regenerate: hasExisting > 0,
+      });
+      emailAssets = emailResult.emailAssets;
+    }
+
+    // Generate legacy Asset docs for meta_ads channels (no HTML preview needed yet)
+    if (hasMetaChannel) {
+      assets = await generateCampaignAssets(campaign, brandGuide);
+    }
 
     // Update campaign status
     campaign.status = CAMPAIGN_STATUS.GENERATED;
     await campaign.save();
 
+    const totalGenerated = assets.length + emailAssets.length;
+
     res.json({
       success: true,
-      message: `Generated ${assets.length} assets successfully`,
-      data: { 
+      message: `Generated ${totalGenerated} assets successfully`,
+      data: {
         campaign,
         assets,
-        generatedCount: assets.length,
+        emailAssets,
+        generatedCount: totalGenerated,
       },
     });
   } catch (error: any) {

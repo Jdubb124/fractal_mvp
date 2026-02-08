@@ -40,15 +40,17 @@ import { RegenerateVersionEvent, ApproveVersionEvent } from './models/asset-gall
                 }
               </div>
               <div class="flex gap-3">
-                @if (campaign()?.status === 'draft') {
+                @if (campaign()?.status === 'draft' || campaign()?.status === 'generated') {
                   <button (click)="generateAssets()" [disabled]="campaignService.isGenerating()" class="btn btn-primary">
                     @if (campaignService.isGenerating()) {
                       <span class="flex items-center gap-2">
                         <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                         Generating...
                       </span>
+                    } @else if (campaign()?.status === 'generated') {
+                      🤖 Regenerate Assets
                     } @else {
-                      🤖 Generate Content
+                      🤖 Generate Assets
                     }
                   </button>
                 }
@@ -94,12 +96,12 @@ import { RegenerateVersionEvent, ApproveVersionEvent } from './models/asset-gall
               <div class="stat-label">Channels</div>
             </div>
             <div class="stat-card">
-              <div class="stat-value text-asset">{{ assets().length }}</div>
+              <div class="stat-value text-asset">{{ emailAssets().length + assets().length }}</div>
               <div class="stat-label">Assets Generated</div>
             </div>
             <div class="stat-card">
-              <div class="stat-value text-version">{{ getTotalVersions() }}</div>
-              <div class="stat-label">Content Versions</div>
+              <div class="stat-value text-version">{{ emailAssets().length }}</div>
+              <div class="stat-label">Email Previews</div>
             </div>
           </div>
 
@@ -134,35 +136,12 @@ import { RegenerateVersionEvent, ApproveVersionEvent } from './models/asset-gall
             <div class="card">
               <div class="flex items-center justify-between mb-6">
                 <div>
-                  <h2 class="text-lg font-semibold">Email HTML Templates</h2>
+                  <h2 class="text-lg font-semibold">Email Previews</h2>
                   <p class="text-sm text-text-secondary mt-1">
-                    Generate production-ready HTML emails from your content
+                    Preview, edit, and export your generated email assets
                   </p>
                 </div>
                 <div class="flex items-center gap-3">
-                  <!-- Template selector -->
-                  <select
-                    [(ngModel)]="selectedTemplate"
-                    class="px-3 py-2 rounded bg-bg-input text-text-primary text-sm border border-border-color"
-                  >
-                    @for (template of templateOptions; track template.value) {
-                      <option [value]="template.value">{{ template.label }}</option>
-                    }
-                  </select>
-                  <button
-                    (click)="generateEmailAssets()"
-                    [disabled]="emailService.isGenerating() || assets().length === 0"
-                    class="btn btn-primary"
-                  >
-                    @if (emailService.isGenerating()) {
-                      <span class="flex items-center gap-2">
-                        <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                        Generating...
-                      </span>
-                    } @else {
-                      ✨ Generate HTML Emails
-                    }
-                  </button>
                   @if (emailAssets().length > 0) {
                     <button
                       (click)="bulkExportEmails()"
@@ -179,13 +158,9 @@ import { RegenerateVersionEvent, ApproveVersionEvent } from './models/asset-gall
                   <div class="w-16 h-16 bg-bg-card rounded-full flex items-center justify-center mx-auto mb-4">
                     <span class="text-2xl">✉️</span>
                   </div>
-                  <h3 class="text-lg font-medium text-text-primary mb-2">No HTML emails generated yet</h3>
+                  <h3 class="text-lg font-medium text-text-primary mb-2">No email assets yet</h3>
                   <p class="text-text-secondary text-sm mb-4">
-                    @if (assets().length === 0) {
-                      First generate content assets, then come back here to create HTML email templates.
-                    } @else {
-                      Click "Generate HTML Emails" to create production-ready email templates from your content.
-                    }
+                    Click "Generate Assets" above to create production-ready HTML emails with visual previews.
                   </p>
                 </div>
               } @else {
@@ -281,8 +256,12 @@ export class CampaignDetailComponent implements OnInit {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.loadCampaign(id);
+<<<<<<< HEAD
       this.loadEmailAssets(id);
       this.loadAudiences();
+      this.loadAudiences();
+=======
+>>>>>>> claude/asset-selection-preview-Zx8Bd
     }
   }
 
@@ -291,18 +270,18 @@ export class CampaignDetailComponent implements OnInit {
       next: (response: CampaignDetailResponse) => {
         this.campaign.set(response.data.campaign);
         this.assets.set(response.data.assets || []);
-      },
-    });
-  }
 
-  loadEmailAssets(campaignId: string): void {
-    this.emailService.getEmailsByCampaign(campaignId).subscribe({
-      next: (assets) => {
-        this.emailAssets.set(assets);
-        // Auto-select first asset if available
-        if (assets.length > 0 && !this.selectedEmailAsset()) {
-          this.selectedEmailAsset.set(assets[0]);
+        // Populate email assets from campaign response
+        const emailAssets = response.data.emailAssets || [];
+        this.emailAssets.set(emailAssets);
+        if (emailAssets.length > 0 && !this.selectedEmailAsset()) {
+          this.selectedEmailAsset.set(emailAssets[0]);
+          // Auto-show emails tab if email assets exist but no legacy assets
+          if ((response.data.assets || []).length === 0) {
+            this.activeTab.set('emails');
+          }
         }
+        this.audienceMap.set(map);
       },
     });
   }
@@ -325,7 +304,7 @@ export class CampaignDetailComponent implements OnInit {
   }
 
   getTotalVersions(): number {
-    return this.assets().reduce((sum, asset) => sum + asset.versions.length, 0);
+    return this.emailAssets().length + this.assets().reduce((sum, asset) => sum + asset.versions.length, 0);
   }
 
   getStatusClass(status: string): string {
@@ -356,6 +335,15 @@ export class CampaignDetailComponent implements OnInit {
       next: (response: CampaignDetailResponse) => {
         this.campaign.set(response.data.campaign);
         this.assets.set(response.data.assets || []);
+
+        // Handle email assets returned from unified generation
+        const emailAssets = response.data.emailAssets || [];
+        if (emailAssets.length > 0) {
+          this.emailAssets.set(emailAssets);
+          this.selectedEmailAsset.set(emailAssets[0]);
+          // Auto-switch to emails tab to show the visual previews
+          this.activeTab.set('emails');
+        }
       },
     });
   }
